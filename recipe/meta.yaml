@@ -1,47 +1,99 @@
-{% set name = "mesaLib" %}
-{% set version = "17.2.0" %}
+{% set version = "25.0.5" %}
 
 package:
-  name: {{ name|lower }}
-  version: "{{ version }}"
+  name: mesalib
+  version: {{ version }}
 
 source:
-  fn: {{ name }}-{{ version }}.tar.gz
-  url: ftp://ftp.freedesktop.org/pub/mesa/mesa-{{ version }}.tar.gz
-  sha256: 9484ad96b4bb6cda5bbf1aef52dfa35183dc21aa6258a2991c245996c2fdaf85
+  url: https://archive.mesa3d.org/mesa-{{ version }}.tar.xz
+  sha256: c0d245dea0aa4b49f74b3d474b16542e4a8799791cd33d676c69f650ad4378d0
 
 build:
-  skip: True  # [win or py3k]
+  skip: true  # [win]
   number: 0
+
   track_features:
-      - mesalib
+    - mesalib
+  run_exports:
+    - {{ pin_subpackage('mesalib', max_pin='x.x') }}
 
 requirements:
   build:
-      - pthread-stubs
-      - pkgconfig
-      - gcc     # [linux]
-      - toolchain
-      - llvmdev
-  run:
-      - pthread-stubs
-      - libgcc  # [linux]
-      - llvmdev
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - meson
+    - pyyaml
+    - mako
+    # packaging is used to check versions at build time
+    - packaging
+    - flex
+    - bison
+    - pkg-config
+    - llvm
+    - llvmdev       # [build_platform != target_platform]
+    - glslang
+  host:
+    - expat
+    - zlib
+    - zstd
+    - libdrm                       # [linux]
+    - spirv-tools
+    - llvm
+    - llvmdev
+    - libxcb
+    - xorg-libx11
+    - xorg-xorgproto
+    - xorg-libxrandr
+    - xorg-libxshmfence
 
 test:
+  requires:
+    - pkg-config
   commands:
-      - test -f $PREFIX/lib/libOSMesa32.so      # [linux]
-      - test -f $PREFIX/lib/libOSMesa32.dylib   # [osx]
+    # We assert that we didn't build screen rendering capabilities.
+    # We want on-screen rendering capabilities to be hardware accelerated
+    # but that will take more effort
+    - test ! -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}     # [linux]
+    - test ! -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}         # [linux]
+    - test ! -f $PREFIX/lib/libgbm${SHLIB_EXT}                 # [linux]
+    - test ! -f $PREFIX/lib/libGLESv1_CM${SHLIB_EXT}           # [linux]
+    - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}              # [linux]
+    - test ! -f $PREFIX/lib/libEGL${SHLIB_EXT}                 # [linux]
+    - test ! -f $PREFIX/lib/libGL${SHLIB_EXT}                  # [linux]
+    - test -f $PREFIX/lib/libOSMesa${SHLIB_EXT}                # [linux]
+    - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}            # [unix]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json   # [x86_64]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json  # [aarch64]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.ppc64le.json  # [ppc64le]
+
+    - test ! -f $PREFIX/lib/libGLESv1_CM.1${SHLIB_EXT}  # [osx]
+    - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}     # [osx]
+    - test -f $PREFIX/lib/libOSMesa.8${SHLIB_EXT}     # [osx]
+    - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}         # [osx]
+
+    # - pkg-config --exists glesv1_cm
+    # - pkg-config --exists glesv2
+    - pkg-config --exists osmesa
+    # - pkg-config --exists gl
+    # - pkg-config --exists egl
+    # - pkg-config --exists gbm       # [linux]
 
 about:
-  home: http://www.mesa3d.org
+  home: https://www.mesa3d.org
   license: MIT
-  license_file: docs/license.html
+  license_family: MIT
+  license_file: docs/license.rst
   summary: Mesa is an open-source implementation of the OpenGL specification - a system for rendering interactive 3D graphics.
+  dev_url: https://gitlab.freedesktop.org/mesa/mesa
+  doc_url: https://docs.mesa3d.org/
 
 extra:
-    recipe-maintainers:
-      - dnadeau4
-      - doutriaux1
-      - sankhesh
-      - danlipsa
+  recipe-maintainers:
+    - dnadeau4
+    - doutriaux1
+    - sankhesh
+    - danlipsa
+    - hmaarrfk
+    - downiec
+    - jasonb5
+    - matthiasdiener
