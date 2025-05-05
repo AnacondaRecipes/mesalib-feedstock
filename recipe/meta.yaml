@@ -26,6 +26,8 @@ requirements:
     - mako
     # packaging is used to check versions at build time
     - packaging
+    # conda_build.exceptions.CondaBuildException: Empty package; python dep present in build but not host requirements. 
+    - python 3.12  # [linux]
     - flex
     - bison
     - pkg-config
