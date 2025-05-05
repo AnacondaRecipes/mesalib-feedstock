@@ -10,7 +10,6 @@ source:
 
 build:
   skip: true  # [win]
-  skip: true  # [py!=312]
   number: 0
 
   track_features:
