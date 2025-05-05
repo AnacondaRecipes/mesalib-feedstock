@@ -1,0 +1,4 @@
+channels:
+  - https://staging.continuum.io/prefect/fs/spirv-headers-feedstock/pr1/3245727
+  - https://staging.continuum.io/prefect/fs/spirv-tools-feedstock/pr2/09ea18f
+  - https://staging.continuum.io/prefect/fs/glslang-feedstock/pr1/d6dee3d

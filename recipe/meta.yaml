@@ -34,10 +34,10 @@ requirements:
     - glslang
   host:
     - expat
-    - zlib
-    - zstd
+    - zlib  {{ zlib }}
+    - zstd  {{ zstd }}
     - libdrm                       # [linux]
-    - spirv-tools
+    - spirv-tools 2025.1
     - llvm
     - llvmdev
     - libxcb
