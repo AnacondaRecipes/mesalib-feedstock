@@ -20,22 +20,21 @@ fi
 meson setup builddir/ \
   ${MESON_ARGS} \
   --prefix=$PREFIX \
+  -Dlibdir=lib \
   -Dplatforms=x11 \
+  -Dvulkan-drivers=all \
+  -Dgallium-drivers=all \
+  -Dgallium-va=disabled \
+  -Dgallium-vdpau=disabled \
   -Dgles1=disabled \
   -Dgles2=disabled \
-  -Dgallium-va=disabled \
-  -Dgbm=disabled \
-  -Dgallium-vdpau=disabled \
-  -Dshared-glapi=enabled \
-  -Dgallium-drivers=softpipe,llvmpipe \
-  -Degl=disabled \
-  -Dglx=disabled \
+  -Dgbm=enabled \
+  -Degl=enabled \
+  -Dglvnd=enabled \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
-  -Dlibdir=lib \
-  -Dosmesa=true \
-  -Dvulkan-drivers=swrast \
-  -Dopengl=true \
+  -Dlibunwind=enabled \
+  -Dzstd=enabled \
   -Dglx-direct=false \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }
 
