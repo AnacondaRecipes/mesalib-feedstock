@@ -46,6 +46,7 @@ requirements:
     - xorg-xorgproto 2023.2
     - xorg-libxrandr 1.5.4
     - xorg-libxshmfence 1.3.2
+    - libglvnd
 
 test:
   requires:
