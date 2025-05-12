@@ -10,8 +10,7 @@ source:
 
 build:
   skip: true  # [win]
-  number: 0
-
+  number: 2
   track_features:
     - mesalib
   run_exports:
@@ -26,27 +25,27 @@ requirements:
     - mako
     # packaging is used to check versions at build time
     - packaging
-    # conda_build.exceptions.CondaBuildException: Empty package; python dep present in build but not host requirements. 
+    # conda_build.exceptions.CondaBuildException: Empty package; python dep present in build but not host requirements.
     - python 3.12  # [linux]
     - flex
     - bison
     - pkg-config
     - llvm
-    - llvmdev       # [build_platform != target_platform]
+    - llvmdev  # [build_platform != target_platform]
     - glslang
   host:
-    - expat
+    - expat 2.5.0
     - zlib  {{ zlib }}
     - zstd  {{ zstd }}
-    - libdrm                       # [linux]
+    - libdrm 2.4.114  # [linux]
     - spirv-tools 2025.1
-    - llvm
-    - llvmdev
-    - libxcb
-    - xorg-libx11
-    - xorg-xorgproto
-    - xorg-libxrandr
-    - xorg-libxshmfence
+    - llvm 17.0.6
+    - llvmdev 17.0.6
+    - libxcb 1.15
+    - xorg-libx11 1.8.7
+    - xorg-xorgproto 2023.2
+    - xorg-libxrandr 1.5.4
+    - xorg-libxshmfence 1.3.2
 
 test:
   requires:
@@ -55,24 +54,22 @@ test:
     # We assert that we didn't build screen rendering capabilities.
     # We want on-screen rendering capabilities to be hardware accelerated
     # but that will take more effort
-    - test ! -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}     # [linux]
-    - test ! -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}         # [linux]
-    - test ! -f $PREFIX/lib/libgbm${SHLIB_EXT}                 # [linux]
-    - test ! -f $PREFIX/lib/libGLESv1_CM${SHLIB_EXT}           # [linux]
-    - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}              # [linux]
-    - test ! -f $PREFIX/lib/libEGL${SHLIB_EXT}                 # [linux]
-    - test ! -f $PREFIX/lib/libGL${SHLIB_EXT}                  # [linux]
-    - test -f $PREFIX/lib/libOSMesa${SHLIB_EXT}                # [linux]
-    - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}            # [unix]
-    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json   # [x86_64]
+    - test ! -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/libGLESv1_CM${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/libEGL${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/libGL${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libOSMesa${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}  # [unix]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json  # [x86_64]
     - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json  # [aarch64]
     - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.ppc64le.json  # [ppc64le]
-
     - test ! -f $PREFIX/lib/libGLESv1_CM.1${SHLIB_EXT}  # [osx]
-    - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}     # [osx]
-    - test -f $PREFIX/lib/libOSMesa.8${SHLIB_EXT}     # [osx]
-    - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}         # [osx]
-
+    - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}  # [osx]
+    - test -f $PREFIX/lib/libOSMesa.8${SHLIB_EXT}  # [osx]
+    - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}  # [osx]
     # - pkg-config --exists glesv1_cm
     # - pkg-config --exists glesv2
     - pkg-config --exists osmesa
@@ -86,6 +83,8 @@ about:
   license_family: MIT
   license_file: docs/license.rst
   summary: Mesa is an open-source implementation of the OpenGL specification - a system for rendering interactive 3D graphics.
+  description: |
+    Mesa is a collection of graphics libraries and drivers that implement a variety of APIs such as OpenGL, Vulkan, and others. It provides software rendering and hardware acceleration for 3D graphics.
   dev_url: https://gitlab.freedesktop.org/mesa/mesa
   doc_url: https://docs.mesa3d.org/
 

@@ -43,5 +43,6 @@ ninja -C builddir/ -j ${CPU_COUNT}
 
 ninja -C builddir/ install
 
+# Tests are skipped because they primarily test libraries omitted from this build.
 # meson test -C builddir/ \
 #   -t 4
