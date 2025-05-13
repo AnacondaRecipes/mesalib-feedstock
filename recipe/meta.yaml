@@ -37,7 +37,6 @@ requirements:
     - spirv-tools 2025.1
     - llvm 17.0.6
     - llvmdev 17.0.6
-    - libllvm 17.0.6
     - libxcb
     - xorg-libx11
     - xorg-xorgproto
@@ -81,7 +80,7 @@ outputs:
         - xorg-libx11
         - xorg-libxext
         - llvm
-        - libllvm
+        - llvmdev
     files:
       - lib/dri/*.so*
       - lib/libgallium*.so*
@@ -112,7 +111,7 @@ outputs:
         - expat
         - libxcb
         - llvm 17.0.6
-        - libllvm 17.0.6
+        - llvmdev 17.0.6
         - zlib
         - zstd
         - spirv-tools 2025.1
@@ -126,7 +125,7 @@ outputs:
         - expat
         - libxcb
         - llvm 17.0.6
-        - libllvm 17.0.6
+        - llvmdev 17.0.6
         - zlib
         - zstd
         - spirv-tools 2025.1
@@ -146,7 +145,7 @@ outputs:
         - libstdcxx-ng
         - libglvnd
         - llvm
-        - libllvm
+        - llvmdev
     files:
       - lib/libGLX_mesa.so*
       - lib/libGL.so*
@@ -161,7 +160,7 @@ outputs:
         - xorg-libx11
         - libxcb
         - libdrm  # [linux]
-        - libllvm 17.0.6
+        - llvmdev 17.0.6
       run:
         - {{ pin_subpackage('mesalib', exact=True) }}
         - libglvnd  # [linux]
@@ -169,7 +168,7 @@ outputs:
         - xorg-libx11
         - libxcb
         - libdrm  # [linux]
-        - libllvm 17.0.6
+        - llvmdev 17.0.6
     test:
       commands:
         - test -f $PREFIX/lib/libGLX_mesa${SHLIB_EXT}  # [linux]
@@ -208,7 +207,7 @@ outputs:
         - libglvnd
         - mesalib
         - llvm
-        - libllvm
+        - llvmdev
     files:
       - lib/libEGL_mesa.so*
       - lib/libEGL.so*
@@ -224,7 +223,7 @@ outputs:
         - expat
         - xorg-libx11
         - libxcb
-        - libllvm 17.0.6
+        - llvmdev 17.0.6
       run:
         - {{ pin_subpackage('mesalib', exact=True) }}
         - {{ pin_subpackage('mesa-libgbm', exact=True) }}
@@ -233,7 +232,7 @@ outputs:
         - expat
         - xorg-libx11
         - libxcb
-        - libllvm 17.0.6
+        - llvmdev 17.0.6
     test:
       commands:
         - test -f $PREFIX/lib/libEGL_mesa${SHLIB_EXT}  # [linux]
@@ -290,7 +289,7 @@ outputs:
       ignore_run_exports:
         - libstdcxx-ng
         - llvm
-        - libllvm
+        - llvmdev
         - mesalib
     files:
       - lib/libvulkan_*.so*
@@ -307,7 +306,7 @@ outputs:
         - xorg-libx11
         - libxcb
         - spirv-tools 2025.1
-        - libllvm 17.0.6
+        - llvmdev 17.0.6
         - zlib
         - zstd
         - xorg-libxshmfence
@@ -319,7 +318,7 @@ outputs:
         - xorg-libx11
         - libxcb
         - spirv-tools 2025.1
-        - libllvm 17.0.6
+        - llvmdev 17.0.6
         - zlib
         - zstd
         - xorg-libxshmfence
