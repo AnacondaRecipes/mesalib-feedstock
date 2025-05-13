@@ -283,7 +283,7 @@ outputs:
         - libxcb
     test:
       commands:
-        - test -f $PREFIX/lib/libvulkan_*${SHLIB_EXT}  # [unix]
+        - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}  # [unix]
         - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [unix]
 
 about:

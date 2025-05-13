@@ -20,10 +20,11 @@ fi
 if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
   GBM_OPTION="-Dgbm=enabled"
-  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,virtio"  # Linux compatible drivers only
+  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,lvp,virtio"  # Include lvp like conda-forge
   
   # Enable EGL on Linux
   EGL_OPTION="-Degl=enabled"
+  GLX_OPTION="-Dglx=true"
 
   # libclc is a required dependency for OpenCL support, which is used by some Gallium drivers like "rusticl" (the Rust OpenCL implementation).
   # Mesa automatically tries to also enable OpenCL support, which needs the libclc library. 
@@ -34,13 +35,13 @@ elif [[ "$target_platform" == osx* ]]; then
   # On osx platfroms: meson.build:458:3: ERROR: Feature gbm cannot be enabled: GBM only supports DRM/KMS platforms
   GBM_OPTION="-Dgbm=disabled"
   
-  # macOS has limited Vulkan support
-  VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
+  # macOS Vulkan with lvp, matching conda-forge's expectations
+  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,lvp"
 
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
 
   # Disable Apple GLX to avoid compatibility issues
-  APPLE_GLX_OPTION="-Dglx-direct=false -Dglx=disabled" 
+  GLX_OPTION="-Dglx-direct=false -Dglx=disabled" 
   
   # Disable EGL on macOS as it requires DRI, Haiku, Windows or Android
   EGL_OPTION="-Degl=disabled"
@@ -48,8 +49,9 @@ else
   GLVND_OPTION="-Dglvnd=disabled"
   VULKAN_DRIVERS="-Dvulkan-drivers=all"  # Keep all for other platforms
   GALLIUM_DRIVERS="-Dgallium-drivers=all"
+  GLX_OPTION="-Dglx=true"
+  EGL_OPTION="-Degl=enabled"
 fi
-
 
 echo "=== BEGIN DIAGNOSTICS ==="
 echo "TARGET_PLATFORM: $target_platform"
@@ -76,12 +78,15 @@ meson setup builddir/ \
   -Dgles2=disabled \
   $GBM_OPTION \
   $GLVND_OPTION \
-  $APPLE_GLX_OPTION \
+  $GLX_OPTION \
   $EGL_OPTION \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
+  -Dshared-glapi=enabled \
   -Dlibunwind=enabled \
   -Dzstd=enabled \
+  -Dosmesa=true \
+  -Dopengl=true \
   -Dglx-direct=false \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }
 
