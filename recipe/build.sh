@@ -20,11 +20,14 @@ fi
 if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
   GBM_OPTION="-Dgbm=enabled"
+  # "vulkan-drivers" allowed choices: "auto, amd, broadcom, freedreno, intel, intel_hasvk, panfrost, swrast, virtio, imagination-experimental, microsoft-experimental, nouveau, asahi, gfxstream, all"
   VULKAN_DRIVERS="-Dvulkan-drivers=swrast,virtio"  # lvp is not a valid option
   
   # Enable EGL on Linux
   EGL_OPTION="-Degl=enabled"
-  GLX_OPTION="-Dglx=true"
+  # Valid GLX options are: "auto", "disabled", "dri", "xlib"
+  GLX_OPTION="-Dglx=dri"
+  GLX_DIRECT="-Dglx-direct=false"
 
   # libclc is a required dependency for OpenCL support, which is used by some Gallium drivers like "rusticl" (the Rust OpenCL implementation).
   # Mesa automatically tries to also enable OpenCL support, which needs the libclc library. 
@@ -41,7 +44,9 @@ elif [[ "$target_platform" == osx* ]]; then
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
 
   # Disable Apple GLX to avoid compatibility issues
-  GLX_OPTION="-Dglx-direct=false -Dglx=disabled" 
+  # Valid GLX options are: "auto", "disabled", "dri", "xlib"
+  GLX_OPTION="-Dglx=disabled"
+  GLX_DIRECT="-Dglx-direct=false"
   
   # Disable EGL on macOS as it requires DRI, Haiku, Windows or Android
   EGL_OPTION="-Degl=disabled"
@@ -49,7 +54,9 @@ else
   GLVND_OPTION="-Dglvnd=disabled"
   VULKAN_DRIVERS="-Dvulkan-drivers=all"  # Keep all for other platforms
   GALLIUM_DRIVERS="-Dgallium-drivers=all"
-  GLX_OPTION="-Dglx=true"
+  # Valid GLX options are: "auto", "disabled", "dri", "xlib"
+  GLX_OPTION="-Dglx=auto"
+  GLX_DIRECT="-Dglx-direct=false"
   EGL_OPTION="-Degl=enabled"
 fi
 
@@ -79,6 +86,7 @@ meson setup builddir/ \
   $GBM_OPTION \
   $GLVND_OPTION \
   $GLX_OPTION \
+  $GLX_DIRECT \
   $EGL_OPTION \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
@@ -87,7 +95,6 @@ meson setup builddir/ \
   -Dzstd=enabled \
   -Dosmesa=true \
   -Dopengl=true \
-  -Dglx-direct=false \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }
 
 ninja -C builddir/ -j ${CPU_COUNT}
