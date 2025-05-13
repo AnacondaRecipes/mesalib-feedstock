@@ -24,12 +24,17 @@ else
   GLVND_OPTION="-Dglvnd=disabled"
 fi
 
-# Add this before meson setup
+echo "=== BEGIN DIAGNOSTICS ==="
+echo "TARGET_PLATFORM: $target_platform"
 echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
+echo "PREFIX: $PREFIX"
 echo "Checking for libglvnd.pc..."
-if [[ "$target_platform" == linux* ]]; then
+if [[ -d "$PREFIX/lib/pkgconfig/" ]]; then
   ls -la $PREFIX/lib/pkgconfig/ | grep glvnd || echo "No libglvnd.pc in $PREFIX/lib/pkgconfig/"
+else
+  echo "$PREFIX/lib/pkgconfig/ directory does not exist"
 fi
+echo "=== END DIAGNOSTICS ==="
 
 meson setup builddir/ \
   ${MESON_ARGS} \
@@ -45,7 +50,6 @@ meson setup builddir/ \
   -Dgbm=enabled \
   $GLVND_OPTION \
   -Degl=enabled \
-  -Dglvnd=enabled \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
   -Dlibunwind=enabled \
