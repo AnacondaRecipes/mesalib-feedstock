@@ -77,6 +77,8 @@ outputs:
         - {{ pin_subpackage('mesalib', max_pin='x.x') }}
       ignore_run_exports:
         - libstdcxx-ng
+        - xorg-libx11
+        - xorg-libxext
     files:
       - lib/dri/*.so*
       - lib/libgallium*.so*
@@ -106,6 +108,12 @@ outputs:
         - xorg-libxext
         - expat
         - libxcb
+        - llvm
+        - zlib
+        - zstd
+        - spirv-tools
+        - xorg-libxshmfence
+        - libstdcxx-ng  # [linux]
       run:
         - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # DRI drivers need libgbm.so
         - libdrm  # [linux]
@@ -113,6 +121,12 @@ outputs:
         - xorg-libxext
         - expat
         - libxcb
+        - llvm
+        - zlib
+        - zstd
+        - spirv-tools
+        - xorg-libxshmfence
+        - libstdcxx-ng  # [linux]
     test:
       commands:
         - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
@@ -283,7 +297,7 @@ outputs:
         - libxcb
     test:
       commands:
-        - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}  # [unix]
+        - test -f $PREFIX/lib/libvulkan_swrast${SHLIB_EXT}  # [unix]
         - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [unix]
 
 about:

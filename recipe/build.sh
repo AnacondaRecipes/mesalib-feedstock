@@ -20,7 +20,7 @@ fi
 if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
   GBM_OPTION="-Dgbm=enabled"
-  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,lvp,virtio"  # Include lvp like conda-forge
+  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,virtio"  # lvp is not a valid option
   
   # Enable EGL on Linux
   EGL_OPTION="-Degl=enabled"
@@ -35,8 +35,8 @@ elif [[ "$target_platform" == osx* ]]; then
   # On osx platfroms: meson.build:458:3: ERROR: Feature gbm cannot be enabled: GBM only supports DRM/KMS platforms
   GBM_OPTION="-Dgbm=disabled"
   
-  # macOS Vulkan with lvp, matching conda-forge's expectations
-  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,lvp"
+  # macOS Vulkan - lvp is not in allowed choices on arm64
+  VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
 
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
 
