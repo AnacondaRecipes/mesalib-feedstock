@@ -17,6 +17,20 @@ if [[ $CONDA_BUILD_CROSS_COMPILATION == "1" ]]; then
   fi
 fi
 
+# Add this before meson setup
+if [[ "$target_platform" == linux* ]]; then
+  GLVND_OPTION="-Dglvnd=enabled"
+else
+  GLVND_OPTION="-Dglvnd=disabled"
+fi
+
+# Add this before meson setup
+echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
+echo "Checking for libglvnd.pc..."
+if [[ "$target_platform" == linux* ]]; then
+  ls -la $PREFIX/lib/pkgconfig/ | grep glvnd || echo "No libglvnd.pc in $PREFIX/lib/pkgconfig/"
+fi
+
 meson setup builddir/ \
   ${MESON_ARGS} \
   --prefix=$PREFIX \
@@ -29,6 +43,7 @@ meson setup builddir/ \
   -Dgles1=disabled \
   -Dgles2=disabled \
   -Dgbm=enabled \
+  $GLVND_OPTION \
   -Degl=enabled \
   -Dglvnd=enabled \
   -Dllvm=enabled \

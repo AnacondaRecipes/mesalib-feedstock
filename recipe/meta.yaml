@@ -46,7 +46,7 @@ requirements:
     - xorg-xorgproto
     - xorg-libxrandr
     - xorg-libxshmfence
-    - libglvnd
+    - libglvnd  # [linux]
 
 test:
   requires:
