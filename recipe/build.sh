@@ -21,10 +21,10 @@ fi
 if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
   GBM_OPTION="-Dgbm=enabled"
-  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,lvp"  # Linux compatible drivers only
+  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,virtio"  # Linux compatible drivers only
 elif [[ "$target_platform" == osx* ]]; then
   # macOS has limited Vulkan support
-  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,lvp"
+  VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
   # On osx platfroms: meson.build:458:3: ERROR: Feature gbm cannot be enabled: GBM only supports DRM/KMS platforms
   GBM_OPTION="-Dgbm=disabled"
 else
