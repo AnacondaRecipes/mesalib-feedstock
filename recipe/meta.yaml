@@ -33,6 +33,8 @@ requirements:
     - llvm
     - llvmdev  # [build_platform != target_platform]
     - glslang
+    # Git program not found, cannot download DirectX-Headers.wrap via git.
+    - git  # [linux]
   host:
     - expat 2.5.0
     - zlib  {{ zlib }}

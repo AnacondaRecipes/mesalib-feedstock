@@ -20,8 +20,18 @@ fi
 # Add this before meson setup
 if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
+  GBM_OPTION="-Dgbm=enabled"
 else
   GLVND_OPTION="-Dglvnd=disabled"
+  # On osx platfroms: meson.build:458:3: ERROR: Feature gbm cannot be enabled: GBM only supports DRM/KMS platforms
+  GBM_OPTION="-Dgbm=disabled"
+fi
+
+# Add this before meson setup
+if [[ "$target_platform" == osx* ]]; then
+  GBM_OPTION="-Dgbm=disabled"
+else
+  GBM_OPTION="-Dgbm=enabled"
 fi
 
 echo "=== BEGIN DIAGNOSTICS ==="
@@ -47,7 +57,7 @@ meson setup builddir/ \
   -Dgallium-vdpau=disabled \
   -Dgles1=disabled \
   -Dgles2=disabled \
-  -Dgbm=enabled \
+  $GBM_OPTION \
   $GLVND_OPTION \
   -Degl=enabled \
   -Dllvm=enabled \
