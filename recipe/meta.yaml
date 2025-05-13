@@ -297,7 +297,7 @@ outputs:
         - libxcb
     test:
       commands:
-        - test -f $PREFIX/lib/libvulkan_swrast${SHLIB_EXT}  # [unix]
+        - test -f $PREFIX/lib/libvulkan_swrast${SHLIB_EXT}  # [linux]
         - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [unix]
 
 about:
