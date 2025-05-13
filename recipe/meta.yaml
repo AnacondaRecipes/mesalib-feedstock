@@ -283,18 +283,21 @@ outputs:
       build:
         - {{ compiler('c') }}
         - {{ compiler('cxx') }}
+        - glslang
       host:
         - {{ pin_subpackage('mesalib', exact=True) }}
         - expat
         - libdrm  # [linux]
         - xorg-libx11
         - libxcb
+        - spirv-tools 2025.1
       run:
         - {{ pin_subpackage('mesalib', exact=True) }}
         - expat
         - libdrm  # [linux]
         - xorg-libx11
         - libxcb
+        - spirv-tools 2025.1
     test:
       commands:
         - test -f $PREFIX/lib/libvulkan_swrast${SHLIB_EXT}  # [linux]
