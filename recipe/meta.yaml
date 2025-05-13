@@ -89,16 +89,8 @@ outputs:
       - share/glvnd/**
       - share/mesa/**
       - bin/mesa*
-      # Exclude files that belong to specific components
-      - exclude lib/*GL*.so*
-      - exclude lib/*EGL*.so*
-      - exclude lib/libgbm.so*
-      - exclude lib/libvulkan_*.so*
-      - exclude include/GL/**
-      - exclude include/EGL/**
-      - exclude include/gbm.h
-      - exclude share/vulkan/**
-      - exclude lib/pkgconfig/**
+      # Exclude gbm.h since it belongs to mesa-libgbm-devel
+      # Other headers will be moved to their respective devel packages
     requirements:
       build:
         - {{ compiler('c') }}
@@ -327,8 +319,12 @@ outputs:
         - libstdcxx-ng  # [linux]
     test:
       commands:
-        - find $PREFIX/lib -name "*vulkan*" || true  # [linux]
-        - test -n "$(find $PREFIX/lib -name "*vulkan*swrast*" -print)"  # [linux]
+        # Linux specific tests
+        - test -f $PREFIX/lib/libvulkan_lvp.so  # [linux]
+        - test -f $PREFIX/lib/libvulkan_virtio.so  # [linux]
+        # macOS specific tests
+        - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json || test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json  # [osx]
+        # Common tests for all platforms
         - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [unix]
 
 about:
