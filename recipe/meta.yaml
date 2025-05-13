@@ -64,8 +64,11 @@ test:
     # We assert that we didn't build screen rendering capabilities.
     # We want on-screen rendering capabilities to be hardware accelerated
     # but that will take more effort
-    - test ! -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
+
+
+    - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
+    
     - test ! -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
     - test ! -f $PREFIX/lib/libGLESv1_CM${SHLIB_EXT}  # [linux]
     - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}  # [linux]

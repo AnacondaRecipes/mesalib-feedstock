@@ -33,7 +33,12 @@ elif [[ "$target_platform" == osx* ]]; then
   GBM_OPTION="-Dgbm=disabled"
   
   # macOS has limited Vulkan support
+  VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
+
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
+
+    # Disable Apple GLX to avoid compatibility issues
+  APPLE_GLX_OPTION="-Dglx-direct=false -Dglx=disabled" 
 else
   GLVND_OPTION="-Dglvnd=disabled"
   VULKAN_DRIVERS="-Dvulkan-drivers=all"  # Keep all for other platforms
@@ -66,6 +71,7 @@ meson setup builddir/ \
   -Dgles2=disabled \
   $GBM_OPTION \
   $GLVND_OPTION \
+  $APPLE_GLX_OPTION \
   -Degl=enabled \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
