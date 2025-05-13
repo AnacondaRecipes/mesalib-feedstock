@@ -51,6 +51,7 @@ requirements:
     - xorg-xorgproto
     - xorg-libxrandr
     - xorg-libxshmfence
+    - xorg-libxfixes 6.0.1
     # libglvnd-devel is needed for libglvnd.pc, otherwise the build fails
     - libglvnd-devel  # [linux]
     # -Dlibunwind=enabled
