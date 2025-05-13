@@ -23,8 +23,8 @@ if [[ "$target_platform" == linux* ]]; then
   GBM_OPTION="-Dgbm=enabled"
   VULKAN_DRIVERS="-Dvulkan-drivers=swrast,virtio"  # Linux compatible drivers only
   
-  # Enable EGL on Linux
-  EGL_OPTION="-Degl=enabled"
+  # Enable EGL on Linux - make sure to not use GLVND for EGL
+  EGL_OPTION="-Degl=enabled -Dglvnd-egl=false"
 
   # libclc is a required dependency for OpenCL support, which is used by some Gallium drivers like "rusticl" (the Rust OpenCL implementation).
   # Mesa automatically tries to also enable OpenCL support, which needs the libclc library. 
