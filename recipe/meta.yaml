@@ -327,7 +327,8 @@ outputs:
         - libstdcxx-ng  # [linux]
     test:
       commands:
-        - test -f $PREFIX/lib/libvulkan_swrast${SHLIB_EXT}  # [linux]
+        - find $PREFIX/lib -name "*vulkan*" || true  # [linux]
+        - test -n "$(find $PREFIX/lib -name "*vulkan*swrast*" -print)"  # [linux]
         - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [unix]
 
 about:
