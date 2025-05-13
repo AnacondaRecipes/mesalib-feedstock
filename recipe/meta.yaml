@@ -97,13 +97,13 @@ outputs:
         - libdrm  # [linux]
         - xorg-libx11
         - xorg-libxext
-        - libstdcxx-ng
+        - libstdcxx-ng  # [linux]
       run:
         - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # DRI drivers need libgbm.so
         - libdrm  # [linux]
         - xorg-libx11
         - xorg-libxext
-        - libstdcxx-ng
+        - libstdcxx-ng  # [linux]
     test:
       commands:
         - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
