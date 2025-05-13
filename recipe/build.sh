@@ -21,7 +21,7 @@ if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
   GBM_OPTION="-Dgbm=enabled"
   # "vulkan-drivers" allowed choices: "auto, amd, broadcom, freedreno, intel, intel_hasvk, panfrost, swrast, virtio, imagination-experimental, microsoft-experimental, nouveau, asahi, gfxstream, all"
-  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,virtio"  # lvp is not a valid option
+  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,virtio"
   
   # Enable EGL on Linux
   EGL_OPTION="-Degl=enabled"
@@ -38,7 +38,6 @@ elif [[ "$target_platform" == osx* ]]; then
   # On osx platfroms: meson.build:458:3: ERROR: Feature gbm cannot be enabled: GBM only supports DRM/KMS platforms
   GBM_OPTION="-Dgbm=disabled"
   
-  # macOS Vulkan - lvp is not in allowed choices on arm64
   VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
 
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
@@ -101,6 +100,5 @@ ninja -C builddir/ -j ${CPU_COUNT}
 
 ninja -C builddir/ install
 
-# Tests are skipped because they primarily test libraries omitted from this build.
 meson test -C builddir/ \
   -t 4
