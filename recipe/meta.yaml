@@ -75,8 +75,11 @@ outputs:
     build:
       run_exports:
         - {{ pin_subpackage('mesalib', max_pin='x.x') }}
+      ignore_run_exports:
+        - libstdcxx-ng
     files:
       - lib/dri/*.so*
+      - lib/libgallium*.so*
       - include/**.h
       - share/drirc.d/**
       - share/glvnd/**
@@ -101,13 +104,15 @@ outputs:
         - libdrm  # [linux]
         - xorg-libx11
         - xorg-libxext
-        - libstdcxx-ng  # [linux]
+        - expat
+        - libxcb
       run:
         - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # DRI drivers need libgbm.so
         - libdrm  # [linux]
         - xorg-libx11
         - xorg-libxext
-        - libstdcxx-ng  # [linux]
+        - expat
+        - libxcb
     test:
       commands:
         - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
@@ -118,6 +123,9 @@ outputs:
     build:
       run_exports:
         - {{ pin_subpackage('mesa-libgl', max_pin='x.x') }}
+      ignore_run_exports:
+        - libstdcxx-ng
+        - libglvnd
     files:
       - lib/libGLX_mesa.so*
       - lib/libGL.so*
@@ -128,9 +136,17 @@ outputs:
       host:
         - {{ pin_subpackage('mesalib', exact=True) }}
         - libglvnd  # [linux]
+        - expat
+        - xorg-libx11
+        - libxcb
+        - libdrm  # [linux]
       run:
         - {{ pin_subpackage('mesalib', exact=True) }}
         - libglvnd  # [linux]
+        - expat
+        - xorg-libx11
+        - libxcb
+        - libdrm  # [linux]
     test:
       commands:
         - test -f $PREFIX/lib/libGLX_mesa${SHLIB_EXT}  # [linux]
@@ -164,6 +180,10 @@ outputs:
     build:
       run_exports:
         - {{ pin_subpackage('mesa-libegl', max_pin='x.x') }}
+      ignore_run_exports:
+        - libstdcxx-ng
+        - libglvnd
+        - mesalib
     files:
       - lib/libEGL_mesa.so*
       - lib/libEGL.so*
@@ -173,10 +193,20 @@ outputs:
         - {{ compiler('cxx') }}
       host:
         - {{ pin_subpackage('mesalib', exact=True) }}
+        - {{ pin_subpackage('mesa-libgbm', exact=True) }}
         - libglvnd  # [linux]
+        - libdrm  # [linux]
+        - expat
+        - xorg-libx11
+        - libxcb
       run:
         - {{ pin_subpackage('mesalib', exact=True) }}
+        - {{ pin_subpackage('mesa-libgbm', exact=True) }}
         - libglvnd  # [linux]
+        - libdrm  # [linux]
+        - expat
+        - xorg-libx11
+        - libxcb
     test:
       commands:
         - test -f $PREFIX/lib/libEGL_mesa${SHLIB_EXT}  # [linux]
@@ -229,6 +259,9 @@ outputs:
 
   # Mesa Vulkan drivers
   - name: mesa-vulkan-drivers
+    build:
+      ignore_run_exports:
+        - libstdcxx-ng
     files:
       - lib/libvulkan_*.so*
       - share/vulkan/**
@@ -238,8 +271,16 @@ outputs:
         - {{ compiler('cxx') }}
       host:
         - {{ pin_subpackage('mesalib', exact=True) }}
+        - expat
+        - libdrm  # [linux]
+        - xorg-libx11
+        - libxcb
       run:
         - {{ pin_subpackage('mesalib', exact=True) }}
+        - expat
+        - libdrm  # [linux]
+        - xorg-libx11
+        - libxcb
     test:
       commands:
         - test -f $PREFIX/lib/libvulkan_*${SHLIB_EXT}  # [unix]
