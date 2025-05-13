@@ -47,6 +47,25 @@ requirements:
     - libunwind 1.5.0  # [linux]
 
 outputs:
+  # Mesa GBM implementation
+  - name: mesa-libgbm
+    build:
+      run_exports:
+        - {{ pin_subpackage('mesa-libgbm', max_pin='x.x') }}
+    files:
+      - lib/libgbm.so*
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+      host:
+        - libdrm  # [linux]
+      run:
+        - libdrm  # [linux]
+    test:
+      commands:
+        - test -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
+
   # Base package with core Mesa components
   - name: mesalib
     build:
@@ -74,13 +93,17 @@ outputs:
         - {{ compiler('c') }}
         - {{ compiler('cxx') }}
       host:
+        - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # Needed at build time for linking
         - libdrm  # [linux]
         - xorg-libx11
         - xorg-libxext
+        - libstdcxx-ng
       run:
+        - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # DRI drivers need libgbm.so
         - libdrm  # [linux]
         - xorg-libx11
         - xorg-libxext
+        - libstdcxx-ng
     test:
       commands:
         - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
@@ -177,25 +200,6 @@ outputs:
         - pkg-config
       commands:
         - pkg-config --exists egl  # [linux]
-
-  # Mesa GBM implementation
-  - name: mesa-libgbm
-    build:
-      run_exports:
-        - {{ pin_subpackage('mesa-libgbm', max_pin='x.x') }}
-    files:
-      - lib/libgbm.so*
-    requirements:
-      build:
-        - {{ compiler('c') }}
-        - {{ compiler('cxx') }}
-      host:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-      run:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-    test:
-      commands:
-        - test -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
 
   # Mesa GBM development files
   - name: mesa-libgbm-devel
