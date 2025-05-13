@@ -53,6 +53,8 @@ requirements:
     - xorg-libxshmfence
     # libglvnd-devel is needed for libglvnd.pc, otherwise the build fails
     - libglvnd-devel  # [linux]
+    # -Dlibunwind=enabled
+    - libunwind 4.0.1
 
 test:
   requires:

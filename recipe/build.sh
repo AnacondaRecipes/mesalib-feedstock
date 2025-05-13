@@ -29,12 +29,11 @@ if [[ "$target_platform" == linux* ]]; then
   # "Dependency 'libclc' not found, tried pkgconfig".
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,virgl,llvmpipe,zink" # no rusticl
 elif [[ "$target_platform" == osx* ]]; then
-  # macOS has limited Vulkan support
-  GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
-  
   # On osx platfroms: meson.build:458:3: ERROR: Feature gbm cannot be enabled: GBM only supports DRM/KMS platforms
   GBM_OPTION="-Dgbm=disabled"
-  GALLIUM_DRIVERS="-Dgallium-drivers=swrast,llvmpipe,softpipe"
+  
+  # macOS has limited Vulkan support
+  GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
 else
   GLVND_OPTION="-Dglvnd=disabled"
   VULKAN_DRIVERS="-Dvulkan-drivers=all"  # Keep all for other platforms
