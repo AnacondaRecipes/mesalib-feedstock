@@ -77,8 +77,8 @@ test:
     - test -f $PREFIX/lib/libOSMesa.8${SHLIB_EXT}  # [osx]
     - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}  # [osx]
     - pkg-config --exists gl
-    - pkg-config --exists egl
-    - pkg-config --exists gbm       # [linux]
+    - pkg-config --exists egl  # [linux]
+    - pkg-config --exists gbm  # [linux]
 
 about:
   home: https://www.mesa3d.org

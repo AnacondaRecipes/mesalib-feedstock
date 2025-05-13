@@ -22,6 +22,9 @@ if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
   GBM_OPTION="-Dgbm=enabled"
   VULKAN_DRIVERS="-Dvulkan-drivers=swrast,virtio"  # Linux compatible drivers only
+  
+  # Enable EGL on Linux
+  EGL_OPTION="-Degl=enabled"
 
   # libclc is a required dependency for OpenCL support, which is used by some Gallium drivers like "rusticl" (the Rust OpenCL implementation).
   # Mesa automatically tries to also enable OpenCL support, which needs the libclc library. 
@@ -37,8 +40,11 @@ elif [[ "$target_platform" == osx* ]]; then
 
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
 
-    # Disable Apple GLX to avoid compatibility issues
+  # Disable Apple GLX to avoid compatibility issues
   APPLE_GLX_OPTION="-Dglx-direct=false -Dglx=disabled" 
+  
+  # Disable EGL on macOS as it requires DRI, Haiku, Windows or Android
+  EGL_OPTION="-Degl=disabled"
 else
   GLVND_OPTION="-Dglvnd=disabled"
   VULKAN_DRIVERS="-Dvulkan-drivers=all"  # Keep all for other platforms
@@ -72,7 +78,7 @@ meson setup builddir/ \
   $GBM_OPTION \
   $GLVND_OPTION \
   $APPLE_GLX_OPTION \
-  -Degl=enabled \
+  $EGL_OPTION \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
   -Dlibunwind=enabled \
