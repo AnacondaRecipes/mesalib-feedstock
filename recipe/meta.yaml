@@ -74,8 +74,10 @@ test:
     - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [aarch64]
     - test ! -f $PREFIX/lib/libGLESv1_CM.1${SHLIB_EXT}  # [osx]
     - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}  # [osx]
+    # OSMesa has been dropped in Mesa 25.1.0
+    # - test -f $PREFIX/lib/libOSMesa.8${SHLIB_EXT}  # [osx]
     - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}  # [osx]
-    - pkg-config --exists gl
+    - pkg-config --exists gl  # [linux]
     - pkg-config --exists egl  # [linux]
     - pkg-config --exists gbm  # [linux]
 
