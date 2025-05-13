@@ -1,7 +1,7 @@
 {% set version = "25.1.0" %}
 
 package:
-  name: mesalib
+  name: mesalib-split
   version: {{ version }}
 
 source:
@@ -11,24 +11,16 @@ source:
 build:
   skip: true  # [win]
   number: 0
-  track_features:
-    - mesalib
-  run_exports:
-    - {{ pin_subpackage('mesalib', max_pin='x.x') }}
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    # Some optional Rust-based components (like the Rust video codec implementations) are being enabled in build.sh:
-    # -Dgallium-drivers=all implicitly includes Rust-based drivers.
     - {{ compiler('rust') }}
     - meson
     - pyyaml
     - mako
-    # packaging is used to check versions at build time
     - packaging
-    # conda_build.exceptions.CondaBuildException: Empty package; python dep present in build but not host requirements.
     - python 3.12  # [linux]
     - flex
     - bison
@@ -36,12 +28,11 @@ requirements:
     - llvm
     - llvmdev  # [build_platform != target_platform]
     - glslang
-    # Git program not found, cannot download DirectX-Headers.wrap via git.
     - git  # [linux]
   host:
     - expat 2.5.0
-    - zlib  {{ zlib }}
-    - zstd  {{ zstd }}
+    - zlib {{ zlib }}
+    - zstd {{ zstd }}
     - libdrm  # [linux]
     - spirv-tools 2025.1
     - llvm 17.0.6
@@ -52,34 +43,199 @@ requirements:
     - xorg-libxrandr
     - xorg-libxshmfence
     - xorg-libxfixes 6.0.1
-    # libglvnd-devel is needed for libglvnd.pc, otherwise the build fails
     - libglvnd-devel  # [linux]
-    # -Dlibunwind=enabled
     - libunwind 1.5.0  # [linux]
 
-test:
-  requires:
-    - pkg-config
-  commands:
-    - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
-    - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
+outputs:
+  # Base package with core Mesa components
+  - name: mesalib
+    build:
+      run_exports:
+        - {{ pin_subpackage('mesalib', max_pin='x.x') }}
+    files:
+      - lib/dri/*.so*
+      - include/**.h
+      - share/drirc.d/**
+      - share/glvnd/**
+      - share/mesa/**
+      - bin/mesa*
+      # Exclude files that belong to specific components
+      - exclude lib/*GL*.so*
+      - exclude lib/*EGL*.so*
+      - exclude lib/libgbm.so*
+      - exclude lib/libvulkan_*.so*
+      - exclude include/GL/**
+      - exclude include/EGL/**
+      - exclude include/gbm.h
+      - exclude share/vulkan/**
+      - exclude lib/pkgconfig/**
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+      host:
+        - libdrm  # [linux]
+        - xorg-libx11
+        - xorg-libxext
+      run:
+        - libdrm  # [linux]
+        - xorg-libx11
+        - xorg-libxext
+    test:
+      commands:
+        - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
+        - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
 
-    - test -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/libGLESv1_CM${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}  # [linux]
-    - test -f $PREFIX/lib/libEGL${SHLIB_EXT}  # [linux]
-    - test -f $PREFIX/lib/libGL${SHLIB_EXT}  # [linux]
-    - test -f $PREFIX/lib/libvulkan_*${SHLIB_EXT}  # [unix]
-    - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [x86_64]
-    - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [aarch64]
-    - test ! -f $PREFIX/lib/libGLESv1_CM.1${SHLIB_EXT}  # [osx]
-    - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}  # [osx]
-    # OSMesa has been dropped in Mesa 25.1.0
-    # - test -f $PREFIX/lib/libOSMesa.8${SHLIB_EXT}  # [osx]
-    - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}  # [osx]
-    - pkg-config --exists gl  # [linux]
-    - pkg-config --exists egl  # [linux]
-    - pkg-config --exists gbm  # [linux]
+  # Mesa GL implementation
+  - name: mesa-libgl
+    build:
+      run_exports:
+        - {{ pin_subpackage('mesa-libgl', max_pin='x.x') }}
+    files:
+      - lib/libGLX_mesa.so*
+      - lib/libGL.so*
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+      host:
+        - {{ pin_subpackage('mesalib', exact=True) }}
+        - libglvnd  # [linux]
+      run:
+        - {{ pin_subpackage('mesalib', exact=True) }}
+        - libglvnd  # [linux]
+    test:
+      commands:
+        - test -f $PREFIX/lib/libGLX_mesa${SHLIB_EXT}  # [linux]
+
+  # Mesa GL development files
+  - name: mesa-libgl-devel
+    build:
+      run_exports:
+        - {{ pin_subpackage('mesa-libgl', max_pin='x.x') }}
+    files:
+      - lib/pkgconfig/gl.pc
+      - include/GL/*.h
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+      host:
+        - {{ pin_subpackage('mesa-libgl', exact=True) }}
+        - libgl-devel  # [linux]
+      run:
+        - {{ pin_subpackage('mesa-libgl', exact=True) }}
+        - libgl-devel  # [linux]
+    test:
+      requires:
+        - pkg-config
+      commands:
+        - pkg-config --exists gl  # [linux]
+
+  # Mesa EGL implementation
+  - name: mesa-libegl
+    build:
+      run_exports:
+        - {{ pin_subpackage('mesa-libegl', max_pin='x.x') }}
+    files:
+      - lib/libEGL_mesa.so*
+      - lib/libEGL.so*
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+      host:
+        - {{ pin_subpackage('mesalib', exact=True) }}
+        - libglvnd  # [linux]
+      run:
+        - {{ pin_subpackage('mesalib', exact=True) }}
+        - libglvnd  # [linux]
+    test:
+      commands:
+        - test -f $PREFIX/lib/libEGL_mesa${SHLIB_EXT}  # [linux]
+
+  # Mesa EGL development files
+  - name: mesa-libegl-devel
+    build:
+      run_exports:
+        - {{ pin_subpackage('mesa-libegl', max_pin='x.x') }}
+    files:
+      - lib/pkgconfig/egl.pc
+      - include/EGL/*.h
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+      host:
+        - {{ pin_subpackage('mesa-libegl', exact=True) }}
+        - libegl-devel  # [linux]
+      run:
+        - {{ pin_subpackage('mesa-libegl', exact=True) }}
+        - libegl-devel  # [linux]
+    test:
+      requires:
+        - pkg-config
+      commands:
+        - pkg-config --exists egl  # [linux]
+
+  # Mesa GBM implementation
+  - name: mesa-libgbm
+    build:
+      run_exports:
+        - {{ pin_subpackage('mesa-libgbm', max_pin='x.x') }}
+    files:
+      - lib/libgbm.so*
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+      host:
+        - {{ pin_subpackage('mesalib', exact=True) }}
+      run:
+        - {{ pin_subpackage('mesalib', exact=True) }}
+    test:
+      commands:
+        - test -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
+
+  # Mesa GBM development files
+  - name: mesa-libgbm-devel
+    build:
+      run_exports:
+        - {{ pin_subpackage('mesa-libgbm', max_pin='x.x') }}
+    files:
+      - lib/pkgconfig/gbm.pc
+      - include/gbm.h
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+      host:
+        - {{ pin_subpackage('mesa-libgbm', exact=True) }}
+      run:
+        - {{ pin_subpackage('mesa-libgbm', exact=True) }}
+    test:
+      requires:
+        - pkg-config
+      commands:
+        - pkg-config --exists gbm  # [linux]
+
+  # Mesa Vulkan drivers
+  - name: mesa-vulkan-drivers
+    files:
+      - lib/libvulkan_*.so*
+      - share/vulkan/**
+    requirements:
+      build:
+        - {{ compiler('c') }}
+        - {{ compiler('cxx') }}
+      host:
+        - {{ pin_subpackage('mesalib', exact=True) }}
+      run:
+        - {{ pin_subpackage('mesalib', exact=True) }}
+    test:
+      commands:
+        - test -f $PREFIX/lib/libvulkan_*${SHLIB_EXT}  # [unix]
+        - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [unix]
 
 about:
   home: https://www.mesa3d.org
