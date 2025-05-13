@@ -54,7 +54,7 @@ requirements:
     # libglvnd-devel is needed for libglvnd.pc, otherwise the build fails
     - libglvnd-devel  # [linux]
     # -Dlibunwind=enabled
-    - libunwind 4.0.1
+    - libunwind 1.5.0  # [linux]
 
 test:
   requires:
