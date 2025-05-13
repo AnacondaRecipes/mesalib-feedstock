@@ -61,19 +61,14 @@ test:
   requires:
     - pkg-config
   commands:
-    # We assert that we didn't build screen rendering capabilities.
-    # We want on-screen rendering capabilities to be hardware accelerated
-    # but that will take more effort
-
-
     - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
     - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
-    
-    - test ! -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
+
+    - test -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
     - test ! -f $PREFIX/lib/libGLESv1_CM${SHLIB_EXT}  # [linux]
     - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/libEGL${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/libGL${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libEGL${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libGL${SHLIB_EXT}  # [linux]
     - test -f $PREFIX/lib/libvulkan_*${SHLIB_EXT}  # [unix]
     - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [x86_64]
     - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [aarch64]
@@ -81,11 +76,9 @@ test:
     - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}  # [osx]
     - test -f $PREFIX/lib/libOSMesa.8${SHLIB_EXT}  # [osx]
     - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}  # [osx]
-    # - pkg-config --exists glesv1_cm
-    # - pkg-config --exists glesv2
-    # - pkg-config --exists gl
-    # - pkg-config --exists egl
-    # - pkg-config --exists gbm       # [linux]
+    - pkg-config --exists gl
+    - pkg-config --exists egl
+    - pkg-config --exists gbm       # [linux]
 
 about:
   home: https://www.mesa3d.org
