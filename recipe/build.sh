@@ -21,18 +21,17 @@ fi
 if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
   GBM_OPTION="-Dgbm=enabled"
-else
-  GLVND_OPTION="-Dglvnd=disabled"
+  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,lvp"  # Linux compatible drivers only
+elif [[ "$target_platform" == osx* ]]; then
+  # macOS has limited Vulkan support
+  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,lvp"
   # On osx platfroms: meson.build:458:3: ERROR: Feature gbm cannot be enabled: GBM only supports DRM/KMS platforms
   GBM_OPTION="-Dgbm=disabled"
+else
+  GLVND_OPTION="-Dglvnd=disabled"
+  VULKAN_DRIVERS="-Dvulkan-drivers=all"  # Keep all for other platforms
 fi
 
-# Add this before meson setup
-if [[ "$target_platform" == osx* ]]; then
-  GBM_OPTION="-Dgbm=disabled"
-else
-  GBM_OPTION="-Dgbm=enabled"
-fi
 
 echo "=== BEGIN DIAGNOSTICS ==="
 echo "TARGET_PLATFORM: $target_platform"
@@ -51,7 +50,7 @@ meson setup builddir/ \
   --prefix=$PREFIX \
   -Dlibdir=lib \
   -Dplatforms=x11 \
-  -Dvulkan-drivers=all \
+  $VULKAN_DRIVERS \
   -Dgallium-drivers=all \
   -Dgallium-va=disabled \
   -Dgallium-vdpau=disabled \
