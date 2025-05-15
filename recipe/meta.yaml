@@ -31,7 +31,6 @@ requirements:
     - llvmdev  # [build_platform != target_platform]
     - glslang
     - git  # [linux]
-    - cmake  # [linux]
   host:
     - expat 2.5.0
     - zlib {{ zlib }}
@@ -238,8 +237,8 @@ outputs:
         - libstdcxx-ng
         - libglvnd
         - mesalib
-        - llvm
-        - llvmdev
+    - llvm
+    - llvmdev
       skip: true  # [osx]
     files:
       - lib/libEGL_mesa.so*
@@ -312,10 +311,10 @@ outputs:
         - {{ pin_subpackage('mesa-libgbm', exact=True) }}
       run:
         - {{ pin_subpackage('mesa-libgbm', exact=True) }}
-    test:
-      requires:
-        - pkg-config
-      commands:
+test:
+  requires:
+    - pkg-config
+  commands:
         - pkg-config --exists gbm  # [linux]
 
   # Mesa OSMesa implementation (supported on both Linux and macOS)
