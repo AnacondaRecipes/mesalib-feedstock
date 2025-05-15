@@ -237,8 +237,6 @@ outputs:
         - libstdcxx-ng
         - libglvnd
         - mesalib
-    - llvm
-    - llvmdev
       skip: true  # [osx]
     files:
       - lib/libEGL_mesa.so*

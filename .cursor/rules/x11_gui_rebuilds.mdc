@@ -1,0 +1,127 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# X11 GUI Package Migration Guide
+
+This guide explains how to migrate X11 GUI packages from using CDTs (Core Dependency Trees) to using conda packages.
+
+## CDT to Conda Package Mapping
+
+Use this mapping table to replace CDT packages with their conda equivalents:
+
+| CDT Package | Conda Package Replacement |
+|-------------|---------------------------|
+| `{{ cdt('libx11-devel') }}` | `xorg-libx11` |
+| `{{ cdt('libxau-devel') }}` | `xorg-libxau` |
+| `{{ cdt('libxcb') }}` | `libxcb` |
+| `{{ cdt('libxcb-devel') }}` | `libxcb` |
+| `{{ cdt('libxext') }}` | `xorg-libxext` |
+| `{{ cdt('libxext-devel') }}` | `xorg-libxext` |
+| `{{ cdt('libxrender-devel') }}` | `xorg-libxrender` |
+| `{{ cdt('libxfixes') }}` | `xorg-libxfixes` |
+| `{{ cdt('libxfixes-devel') }}` | `xorg-libxfixes` |
+| `{{ cdt('libxdamage') }}` | `xorg-libxdamage` |
+| `{{ cdt('libxdamage-devel') }}` | `xorg-libxdamage` |
+| `{{ cdt('libxcomposite-devel') }}` | `xorg-libxcomposite` |
+| `{{ cdt('libxcursor-devel') }}` | `xorg-libxcursor` |
+| `{{ cdt('libxi-devel') }}` | `xorg-libxi` |
+| `{{ cdt('libxrandr-devel') }}` | `xorg-libxrandr` |
+| `{{ cdt('libxscrnsaver-devel') }}` | `xorg-libxscrnsaver` |
+| `{{ cdt('libxtst-devel') }}` | `xorg-libxtst` |
+| `{{ cdt('libxxf86vm') }}` | `xorg-libxxf86vm` |
+| `{{ cdt('libxxf86vm-devel') }}` | `xorg-libxxf86vm` |
+| `{{ cdt('xcb-util-devel') }}` | `xcb-util` |
+| `{{ cdt('xcb-util-image-devel') }}` | `xcb-util-image` |
+| `{{ cdt('xcb-util-keysyms-devel') }}` | `xcb-util-keysyms` |
+| `{{ cdt('xcb-util-renderutil-devel') }}` | `xcb-util-renderutil` |
+| `{{ cdt('xcb-util-wm-devel') }}` | `xcb-util-wm` |
+| `{{ cdt('xorg-x11-proto-devel') }}` | `xorg-xorgproto` |
+| `{{ cdt('xorg-x11-util-macros') }}` | `xorg-util-macros` |
+| `{{ cdt('mesa-libgl-devel') }}` | `libgl-devel` |
+| `{{ cdt('mesa-dri-drivers') }}` | `mesa-dri-drivers` |
+| `{{ cdt('libglvnd-devel') }}` | `libgl-devel` |
+| `{{ cdt('libglvnd-glx') }}` | `libglx` |
+| `{{ cdt('libglvnd-opengl') }}` | `libopengl` |
+| `{{ cdt('libglvnd-egl') }}` | `libegl` |
+| `{{ cdt('libice-devel') }}` | `xorg-libice` |
+| `{{ cdt('libsm-devel') }}` | `xorg-libsm` |
+| `{{ cdt('libxft-devel') }}` | `xorg-libxft` |
+| `{{ cdt('libxinerama-devel') }}` | `xorg-libxinerama` |
+| `{{ cdt('libxshmfence') }}` | `xorg-libxshmfence` |
+| `{{ cdt('libxshmfence-devel') }}` | `xorg-libxshmfence` |
+| `{{ cdt('libxt-devel') }}` | `xorg-libxt` |
+
+**IMPORTANT**: Always replace `xorg-xproto` with `xorg-xorgproto` in recipes!
+
+## First Steps
+
+1. **Check conda-forge feedstock** for the same package to see:
+   - Which X11 dependencies they use
+   - Where they place them (host vs. run sections)
+   - Version constraints (if any)
+   - Test requirements and commands
+
+2. Bump the build number
+
+## Implementation Guidelines
+
+1. Always add `# [linux]` selectors to X11 dependencies to ensure they're only included on Linux platforms
+
+2. Most X11 dependencies should be in the `host` section, not in `run` section
+   - This follows conda-forge's approach which relies on `run_exports` to add necessary runtime dependencies
+
+3. Update test section to properly verify package functionality:
+
+```yaml
+test:
+  requires:
+    - pkg-config
+    # The packages below are needed for the pkg-config invocations
+    - expat
+    - glib
+    - zlib
+    - xorg-xorgproto       # [linux]
+  commands:
+    # Verify pkg-config functionality
+    - export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig        # [not win]
+    - set "PKG_CONFIG_PATH=%LIBRARY_LIB%\\pkgconfig"      # [win]
+    - pkg-config --cflags <package>
+```
+
+## PR Template
+
+Use this template for PR descriptions:
+
+```
+**Destination channel:** main
+
+### Links
+- [PKG-XXXX](mdc:https:/anaconda.atlassian.net/browse/PKG-XXXX)
+- [Upstream repository](mdc:URL_TO_UPSTREAM)
+
+### Explanation of changes:
+- Bump the build number to X
+- Move X11 dependencies from CDTs in build section to regular packages in host section:
+  - Replace {{ cdt('libx11-devel') }} with xorg-libx11 # [linux]
+  - Replace {{ cdt('libxext-devel') }} with xorg-libxext # [linux]
+  - Replace {{ cdt('libxrender-devel') }} with xorg-libxrender # [linux]
+  - Replace {{ cdt('xorg-x11-proto-devel') }} with xorg-xorgproto # [linux]
+  [add other replacements as needed]
+- All X11/Xorg packages constrained with # [linux] to ensure they're only included on Linux platforms
+- [Any package-specific changes]
+
+### Notes:
+- It's an automated migration/rebuild for the `x11_gui_rebuilds` group at stage X:
+```
+[Include the relevant portion of the stages list]
+```
+```
+
+## Common Issues
+
+1. Different packages may need different sets of X11 libraries
+2. Verify if dependency pins (version constraints) are needed
+3. Update test commands to check for proper X11 integration
+4. When in doubt, refer to conda-forge implementation
