@@ -364,7 +364,7 @@ outputs:
         - libxcb  # [linux]
         - spirv-tools 2025.1
         - llvmdev 17.0.6
-        - libllvm17 17.0.6  # [linux]
+        - libllvm17 17.0.6
         - zlib
         - zstd
         - xorg-libxshmfence  # [linux]
@@ -377,7 +377,7 @@ outputs:
         - libxcb  # [linux]
         - spirv-tools 2025.1
         - llvmdev 17.0.6
-        - libllvm17 17.0.6  # [linux]
+        - libllvm17 17.0.6
         - zlib
         - zstd
         - xorg-libxshmfence  # [linux]

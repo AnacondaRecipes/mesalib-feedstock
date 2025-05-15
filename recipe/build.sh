@@ -18,7 +18,7 @@ if [[ $CONDA_BUILD_CROSS_COMPILATION == "1" ]]; then
 fi
 
 # OpenCL is disabled - removed deprecated options
-OPENCL_OPTIONS="-Dgallium-opencl=disabled"
+OPENCL_OPTIONS="-Dgallium-opencl=disabled -Dclc-libdir=disabled -Dlibclc=disabled"
 
 # OSMesa options - Mesa 25.1.0 still supports OSMesa but the interface has changed
 OSMESA_OPTIONS="-Dosmesa=true"
