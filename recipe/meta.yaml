@@ -1,6 +1,4 @@
 {% set version = "25.1.0" %}
-{% set zlib = "1.2.13" %}
-{% set zstd = "1.5.5" %}
 
 package:
   name: mesalib-split
@@ -33,6 +31,7 @@ requirements:
     - llvmdev  # [build_platform != target_platform]
     - glslang
     - git  # [linux]
+    - cmake  # [linux]
   host:
     - expat 2.5.0
     - zlib {{ zlib }}
