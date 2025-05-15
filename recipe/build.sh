@@ -18,13 +18,13 @@ if [[ $CONDA_BUILD_CROSS_COMPILATION == "1" ]]; then
 fi
 
 # OpenCL is disabled - removed deprecated options
-OPENCL_OPTIONS="-Dgallium-opencl=disabled -Dclc-libdir=disabled -Dlibclc=disabled"
+OPENCL_OPTIONS="-Dgallium-opencl=disabled"
 
 # OSMesa options - Mesa 25.1.0 still supports OSMesa but the interface has changed
 OSMESA_OPTIONS="-Dosmesa=true"
 
 # Common options across platforms
-COMMON_OPTIONS="-Dzstd=enabled -Dopengl=true -Dtools=[] -Dbuild-tests=false"
+COMMON_OPTIONS="-Dzstd=enabled -Dopengl=true -Dtools=[] -Dbuild-tests=true"
 
 if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
@@ -112,5 +112,6 @@ ninja -C builddir/ -j ${CPU_COUNT}
 
 ninja -C builddir/ install
 
-meson test -C builddir/ \
-  -t 4
+echo "Running Mesa tests..."
+meson test -C builddir/ -t 4 -v
+
