@@ -17,11 +17,14 @@ if [[ $CONDA_BUILD_CROSS_COMPILATION == "1" ]]; then
   fi
 fi
 
-# Add OpenCL options (disabled for now)
-OPENCL_OPTIONS="-Dgallium-opencl=disabled -Dclc-libdir=$PREFIX/lib"
+# OpenCL is disabled - removed deprecated options
+OPENCL_OPTIONS="-Dgallium-opencl=disabled"
 
-# Add explicit OSMESA options
-OSMESA_OPTIONS="-Dosmesa=true -Dosmesa-bits=8"
+# OSMesa options - Mesa 25.1.0 still supports OSMesa but the interface has changed
+OSMESA_OPTIONS="-Dosmesa=true"
+
+# Common options across platforms
+COMMON_OPTIONS="-Dzstd=enabled -Dopengl=true -Dtools=[] -Dbuild-tests=false"
 
 if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
@@ -37,21 +40,37 @@ if [[ "$target_platform" == linux* ]]; then
 
   # Expand Gallium drivers on Linux
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,virgl,llvmpipe,zink,crocus,iris"
+  
+  # Set platforms for Linux
+  PLATFORMS="-Dplatforms=x11"
+  
+  # Linux-specific options
+  LINUX_OPTIONS="-Dlibunwind=enabled -Dshared-glapi=enabled"
+  
+  PLATFORM_OPTIONS="$LINUX_OPTIONS"
 elif [[ "$target_platform" == osx* ]]; then
-  # On osx platfroms: meson.build:458:3: ERROR: Feature gbm cannot be enabled: GBM only supports DRM/KMS platforms
+  # On macOS, completely disable features that depend on X11/xcb/DRI
   GBM_OPTION="-Dgbm=disabled"
   
   VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
 
+  # Use only software rasterizers that work on macOS
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
 
-  # Disable Apple GLX to avoid compatibility issues
-  # Valid GLX options are: "auto", "disabled", "dri", "xlib"
+  # Disable GLX completely on macOS (macOS uses CGL instead)
   GLX_OPTION="-Dglx=disabled"
-  GLX_DIRECT="-Dglx-direct=false"
+  GLX_DIRECT=""
   
-  # Disable EGL on macOS as it requires DRI, Haiku, Windows or Android
+  # Disable EGL on macOS as it's not well supported
   EGL_OPTION="-Degl=disabled"
+  
+  # Set platforms explicitly to macos for Mesa on macOS
+  PLATFORMS="-Dplatforms=macos"
+  
+  # MacOS-specific options - disable libunwind as it's not needed
+  MACOS_OPTIONS="-Dlibunwind=disabled -Dshared-glapi=enabled"
+  
+  PLATFORM_OPTIONS="$MACOS_OPTIONS"
 else
   GLVND_OPTION="-Dglvnd=disabled"
   VULKAN_DRIVERS="-Dvulkan-drivers=all"  # Keep all for other platforms
@@ -60,13 +79,16 @@ else
   GLX_OPTION="-Dglx=auto"
   GLX_DIRECT="-Dglx-direct=false"
   EGL_OPTION="-Degl=enabled"
+  PLATFORMS="-Dplatforms=auto"
+  
+  PLATFORM_OPTIONS=""
 fi
 
 meson setup builddir/ \
   ${MESON_ARGS} \
   --prefix=$PREFIX \
   -Dlibdir=lib \
-  -Dplatforms=x11 \
+  $PLATFORMS \
   $VULKAN_DRIVERS \
   $GALLIUM_DRIVERS \
   -Dgallium-va=disabled \
@@ -80,12 +102,10 @@ meson setup builddir/ \
   $EGL_OPTION \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
-  -Dshared-glapi=enabled \
-  -Dlibunwind=enabled \
-  -Dzstd=enabled \
+  $COMMON_OPTIONS \
+  $PLATFORM_OPTIONS \
   $OSMESA_OPTIONS \
   $OPENCL_OPTIONS \
-  -Dopengl=true \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }
 
 ninja -C builddir/ -j ${CPU_COUNT}

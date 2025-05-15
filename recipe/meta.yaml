@@ -17,11 +17,13 @@ requirements:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - {{ compiler('rust') }}
-    - meson
+    - meson >=0.63.0
+    - ninja
     - pyyaml
     - mako
     - packaging
     - python 3.12  # [linux]
+    - python 3.11  # [osx]
     - flex
     - bison
     - pkg-config
@@ -46,16 +48,19 @@ requirements:
     - xorg-libxdamage  # [linux]
     - xorg-libxxf86vm  # [linux]
     - libgl-devel  # [linux]
+    - libglvnd  # [linux]
+    - libglvnd-devel  # [linux]
     - libunwind 1.5.0  # [linux]
 
 outputs:
-  # Mesa GBM implementation
+  # Mesa GBM implementation (only on Linux)
   - name: mesa-libgbm
     build:
       run_exports:
         - {{ pin_subpackage('mesa-libgbm', max_pin='x.x') }}
       ignore_run_exports:
         - libstdcxx-ng
+      skip: true  # [osx]
     files:
       - lib/libgbm.so*
     requirements:
@@ -77,7 +82,7 @@ outputs:
     build:
       run_exports:
         - {{ pin_subpackage('mesalib', max_pin='x.x') }}
-        - {{ pin_subpackage('mesa-dri-drivers', max_pin='x.x') }}
+        - {{ pin_subpackage('mesa-dri-drivers', max_pin='x.x') }}  # [linux]
       ignore_run_exports:
         - libstdcxx-ng
         - xorg-libx11
@@ -85,13 +90,14 @@ outputs:
         - llvm
         - llvmdev
     files:
-      - lib/dri/*.so*
-      - lib/libgallium*.so*
+      - lib/dri/*.so*  # [linux]
+      - lib/libgallium*.so*  # [linux]
+      - lib/libgallium*.dylib*  # [osx]
       - include/**.h
       - share/drirc.d/**
-      - share/glvnd/**
+      - share/glvnd/**  # [linux]
       - share/mesa/**
-      - bin/mesa*
+      - bin/mesa*  # [linux]
       # Exclude gbm.h since it belongs to mesa-libgbm-devel
       # Other headers will be moved to their respective devel packages
     requirements:
@@ -99,7 +105,7 @@ outputs:
         - {{ compiler('c') }}
         - {{ compiler('cxx') }}
       host:
-        - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # Needed at build time for linking
+        - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # [linux] # Needed at build time for linking
         - libdrm  # [linux]
         - xorg-libx11 >=1.8.12,<2.0a0  # [linux]
         - xorg-libxext >=1.3.6,<2.0a0  # [linux]
@@ -115,7 +121,7 @@ outputs:
         - xorg-libxshmfence  # [linux]
         - libstdcxx-ng  # [linux]
       run:
-        - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # DRI drivers need libgbm.so
+        - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # [linux] # DRI drivers need libgbm.so
         - libdrm  # [linux]
         - xorg-libx11 >=1.8.12,<2.0a0  # [linux]
         - xorg-libxext >=1.3.6,<2.0a0  # [linux]
@@ -134,12 +140,14 @@ outputs:
       commands:
         - test -f $PREFIX/lib/dri/softpipe_dri${SHLIB_EXT}  # [linux]
         - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
+        - test -d $PREFIX/include/GL  # [unix]
 
-  # Mesa DRI drivers package
+  # Mesa DRI drivers package (only on Linux)
   - name: mesa-dri-drivers
     build:
       ignore_run_exports:
         - libstdcxx-ng
+      skip: true  # [osx]
     files:
       - lib/dri/*.so*
     requirements:
@@ -156,7 +164,7 @@ outputs:
         - test -f $PREFIX/lib/dri/softpipe_dri${SHLIB_EXT}  # [linux]
         - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
 
-  # Mesa GL implementation
+  # Mesa GL implementation (only on Linux)
   - name: mesa-libgl
     build:
       run_exports:
@@ -166,6 +174,7 @@ outputs:
         - libglvnd
         - llvm
         - llvmdev
+      skip: true  # [osx]
     files:
       - lib/libGLX_mesa.so*
       - lib/libGL.so*
@@ -193,11 +202,12 @@ outputs:
       commands:
         - test -f $PREFIX/lib/libGLX_mesa${SHLIB_EXT}  # [linux]
 
-  # Mesa GL development files
+  # Mesa GL development files (only on Linux)
   - name: mesa-libgl-devel
     build:
       run_exports:
         - {{ pin_subpackage('mesa-libgl', max_pin='x.x') }}
+      skip: true  # [osx]
     files:
       - lib/pkgconfig/gl.pc
       - include/GL/*.h
@@ -217,7 +227,7 @@ outputs:
       commands:
         - pkg-config --exists gl  # [linux]
 
-  # Mesa EGL implementation
+  # Mesa EGL implementation (only on Linux)
   - name: mesa-libegl
     build:
       run_exports:
@@ -228,6 +238,7 @@ outputs:
         - mesalib
         - llvm
         - llvmdev
+      skip: true  # [osx]
     files:
       - lib/libEGL_mesa.so*
       - lib/libEGL.so*
@@ -257,11 +268,12 @@ outputs:
       commands:
         - test -f $PREFIX/lib/libEGL_mesa${SHLIB_EXT}  # [linux]
 
-  # Mesa EGL development files
+  # Mesa EGL development files (only on Linux)
   - name: mesa-libegl-devel
     build:
       run_exports:
         - {{ pin_subpackage('mesa-libegl', max_pin='x.x') }}
+      skip: true  # [osx]
     files:
       - lib/pkgconfig/egl.pc
       - include/EGL/*.h
@@ -281,11 +293,12 @@ outputs:
       commands:
         - pkg-config --exists egl  # [linux]
 
-  # Mesa GBM development files
+  # Mesa GBM development files (only on Linux)
   - name: mesa-libgbm-devel
     build:
       run_exports:
         - {{ pin_subpackage('mesa-libgbm', max_pin='x.x') }}
+      skip: true  # [osx]
     files:
       - lib/pkgconfig/gbm.pc
       - include/gbm.h
@@ -303,23 +316,30 @@ outputs:
       commands:
         - pkg-config --exists gbm  # [linux]
 
-  # Mesa OSMesa implementation
+  # Mesa OSMesa implementation (supported on both Linux and macOS)
+  # Note: In Mesa 25.1.0, OSMesa functionality might be integrated differently, but we keep the package for compatibility
   - name: mesa-osmesa
     build:
       run_exports:
         - {{ pin_subpackage('mesa-osmesa', max_pin='x.x') }}
     files:
-      - lib/libOSMesa.so*
+      - lib/libOSMesa.so*  # [linux]
+      - lib/libOSMesa.dylib*  # [osx]
     requirements:
       host:
         - {{ pin_subpackage('mesalib', exact=True) }}
+        - llvmdev 17.0.6
+        - spirv-tools 2025.1
       run:
         - {{ pin_subpackage('mesalib', exact=True) }}
+        - llvmdev 17.0.6
+        - spirv-tools 2025.1
     test:
       commands:
         - test -f $PREFIX/lib/libOSMesa${SHLIB_EXT}  # [linux]
+        - ls -la $PREFIX/lib/  # [osx]
 
-  # Mesa Vulkan drivers
+  # Mesa Vulkan drivers (supported on both Linux and macOS)
   - name: mesa-vulkan-drivers
     build:
       ignore_run_exports:
@@ -328,7 +348,8 @@ outputs:
         - llvmdev
         - mesalib
     files:
-      - lib/libvulkan_*.so*
+      - lib/libvulkan_*.so*  # [linux]
+      - lib/libvulkan_*.dylib*  # [osx]
       - share/vulkan/**
     requirements:
       build:
@@ -367,7 +388,7 @@ outputs:
         - test -f $PREFIX/lib/libvulkan_swrast.so  # [linux]
         - test -f $PREFIX/lib/libvulkan_virtio.so  # [linux]
         # macOS specific tests
-        - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json || test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json  # [osx]
+        - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json || test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json || test -f $PREFIX/share/vulkan/icd.d/swrast_icd.aarch64.json || test -f $PREFIX/share/vulkan/icd.d/swrast_icd.x86_64.json  # [osx]
         # Common tests for all platforms
         - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [unix]
 
