@@ -17,6 +17,12 @@ if [[ $CONDA_BUILD_CROSS_COMPILATION == "1" ]]; then
   fi
 fi
 
+# Add OpenCL options (disabled for now)
+OPENCL_OPTIONS="-Dgallium-opencl=disabled -Dclc-libdir=$PREFIX/lib"
+
+# Add explicit OSMESA options
+OSMESA_OPTIONS="-Dosmesa=true -Dosmesa-bits=8"
+
 if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
   GBM_OPTION="-Dgbm=enabled"
@@ -29,11 +35,8 @@ if [[ "$target_platform" == linux* ]]; then
   GLX_OPTION="-Dglx=dri"
   GLX_DIRECT="-Dglx-direct=false"
 
-  # libclc is a required dependency for OpenCL support, which is used by some Gallium drivers like "rusticl" (the Rust OpenCL implementation).
-  # Mesa automatically tries to also enable OpenCL support, which needs the libclc library. 
-  # But libclc isn't available on the main channel:
-  # "Dependency 'libclc' not found, tried pkgconfig".
-  GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,virgl,llvmpipe,zink" # no rusticl
+  # Expand Gallium drivers on Linux
+  GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,virgl,llvmpipe,zink,crocus,iris"
 elif [[ "$target_platform" == osx* ]]; then
   # On osx platfroms: meson.build:458:3: ERROR: Feature gbm cannot be enabled: GBM only supports DRM/KMS platforms
   GBM_OPTION="-Dgbm=disabled"
@@ -59,18 +62,6 @@ else
   EGL_OPTION="-Degl=enabled"
 fi
 
-echo "=== BEGIN DIAGNOSTICS ==="
-echo "TARGET_PLATFORM: $target_platform"
-echo "PKG_CONFIG_PATH: $PKG_CONFIG_PATH"
-echo "PREFIX: $PREFIX"
-echo "Checking for libglvnd.pc..."
-if [[ -d "$PREFIX/lib/pkgconfig/" ]]; then
-  ls -la $PREFIX/lib/pkgconfig/ | grep glvnd || echo "No libglvnd.pc in $PREFIX/lib/pkgconfig/"
-else
-  echo "$PREFIX/lib/pkgconfig/ directory does not exist"
-fi
-echo "=== END DIAGNOSTICS ==="
-
 meson setup builddir/ \
   ${MESON_ARGS} \
   --prefix=$PREFIX \
@@ -81,7 +72,7 @@ meson setup builddir/ \
   -Dgallium-va=disabled \
   -Dgallium-vdpau=disabled \
   -Dgles1=disabled \
-  -Dgles2=disabled \
+  -Dgles2=enabled \
   $GBM_OPTION \
   $GLVND_OPTION \
   $GLX_OPTION \
@@ -92,7 +83,8 @@ meson setup builddir/ \
   -Dshared-glapi=enabled \
   -Dlibunwind=enabled \
   -Dzstd=enabled \
-  -Dosmesa=true \
+  $OSMESA_OPTIONS \
+  $OPENCL_OPTIONS \
   -Dopengl=true \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }
 
