@@ -309,10 +309,10 @@ outputs:
         - {{ pin_subpackage('mesa-libgbm', exact=True) }}
       run:
         - {{ pin_subpackage('mesa-libgbm', exact=True) }}
-test:
-  requires:
-    - pkg-config
-  commands:
+    test:
+      requires:
+        - pkg-config
+      commands:
         - pkg-config --exists gbm  # [linux]
 
   # Mesa OSMesa implementation (supported on both Linux and macOS)
