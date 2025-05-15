@@ -2,3 +2,4 @@
 
 build_artefacts
 .cursor/*/*
+.cursor/rules/x11_gui_rebuilds.mdc

@@ -39,7 +39,7 @@ if [[ "$target_platform" == linux* ]]; then
   GLX_DIRECT="-Dglx-direct=false"
 
   # Expand Gallium drivers on Linux
-  GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,virgl,llvmpipe,zink,crocus,iris"
+  GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,virgl,llvmpipe,zink"
   
   # Set platforms for Linux
   PLATFORMS="-Dplatforms=x11"
