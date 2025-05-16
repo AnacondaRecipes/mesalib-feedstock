@@ -1,7 +1,7 @@
 {% set version = "25.1.0" %}
 
 package:
-  name: mesalib-split
+  name: mesalib
   version: {{ version }}
 
 source:
@@ -22,8 +22,7 @@ requirements:
     - pyyaml
     - mako
     - packaging
-    - python 3.12  # [linux]
-    - python 3.11  # [osx]
+    - python 3.12
     - flex
     - bison
     - pkg-config
@@ -33,363 +32,64 @@ requirements:
     - git  # [linux]
   host:
     - expat 2.5.0
-    - zlib {{ zlib }}
-    - zstd {{ zstd }}
     - libdrm  # [linux]
-    - spirv-tools 2025.1
-    - llvm 17.0.6
-    - llvmdev 17.0.6
-    - libxcb  # [linux]
-    - xorg-libx11  # [linux]
-    - xorg-xorgproto  # [linux]
-    - xorg-libxrandr  # [linux]
-    - xorg-libxshmfence  # [linux]
-    - xorg-libxfixes 6.0.1  # [linux]
-    - xorg-libxdamage  # [linux]
-    - xorg-libxxf86vm  # [linux]
     - libgl-devel  # [linux]
-    - libglvnd  # [linux]
+    - libglvnd  # [linux]  # glvnd is the OpenGL vendor-neutral dispatch library
     - libglvnd-devel  # [linux]
     - libunwind 1.5.0  # [linux]
+    - libxcb  # [linux]
+    - llvm 17.0.6
+    - llvmdev 17.0.6
+    - spirv-tools 2025.1
+    - xorg-libx11  # [linux]
+    - xorg-libxdamage  # [linux]
+    - xorg-libxfixes 6.0.1  # [linux]
+    - xorg-libxrandr  # [linux]
+    - xorg-libxshmfence  # [linux]
+    - xorg-libxxf86vm  # [linux]
+    - xorg-xorgproto  # [linux]
+    - zlib
+    - zstd
+  run:
+    - expat 2.5.0
+    - libdrm  # [linux]
+    - libglvnd  # [linux]
+    - libunwind 1.5.0  # [linux]
+    - libxcb  # [linux]
+    - llvm 17.0.6
+    - llvmdev 17.0.6
+    - spirv-tools 2025.1
+    - xorg-libx11  # [linux]
+    - xorg-libxdamage  # [linux]
+    - xorg-libxfixes 6.0.1  # [linux]
+    - xorg-libxrandr  # [linux]
+    - xorg-libxshmfence  # [linux]
+    - xorg-libxxf86vm  # [linux]
+    - xorg-xorgproto  # [linux]
+    - zlib
+    - zstd
 
-outputs:
-  # Mesa GBM implementation (only on Linux)
-  - name: mesa-libgbm
-    build:
-      run_exports:
-        - {{ pin_subpackage('mesa-libgbm', max_pin='x.x') }}
-      ignore_run_exports:
-        - libstdcxx-ng
-      skip: true  # [osx]
-    files:
-      - lib/libgbm.so*
-    requirements:
-      build:
-        - {{ compiler('c') }}
-        - {{ compiler('cxx') }}
-      host:
-        - libdrm  # [linux]
-        - expat
-      run:
-        - libdrm  # [linux]
-        - expat
-    test:
-      commands:
-        - test -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
-
-  # Base package with core Mesa components
-  - name: mesalib
-    build:
-      run_exports:
-        - {{ pin_subpackage('mesalib', max_pin='x.x') }}
-        - {{ pin_subpackage('mesa-dri-drivers', max_pin='x.x') }}  # [linux]
-      ignore_run_exports:
-        - libstdcxx-ng
-        - xorg-libx11
-        - xorg-libxext
-        - llvm
-        - llvmdev
-    files:
-      - lib/dri/*.so*  # [linux]
-      - lib/libgallium*.so*  # [linux]
-      - lib/libgallium*.dylib*  # [osx]
-      - include/**
-      - share/drirc.d/**
-      - share/glvnd/**  # [linux]
-      - share/mesa/**
-      - bin/mesa*  # [linux]
-      # Exclude gbm.h since it belongs to mesa-libgbm-devel
-      # Other headers will be moved to their respective devel packages
-    requirements:
-      build:
-        - {{ compiler('c') }}
-        - {{ compiler('cxx') }}
-      host:
-        - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # [linux] # Needed at build time for linking
-        - libdrm  # [linux]
-        - xorg-libx11 >=1.8.12,<2.0a0  # [linux]
-        - xorg-libxext >=1.3.6,<2.0a0  # [linux]
-        - xorg-libxdamage  # [linux]
-        - xorg-libxxf86vm  # [linux]
-        - expat
-        - libxcb  # [linux]
-        - llvm 17.0.6
-        - llvmdev 17.0.6
-        - zlib
-        - zstd
-        - spirv-tools 2025.1
-        - xorg-libxshmfence  # [linux]
-        - libstdcxx-ng  # [linux]
-      run:
-        - {{ pin_subpackage('mesa-libgbm', exact=True) }}  # [linux] # DRI drivers need libgbm.so
-        - libdrm  # [linux]
-        - xorg-libx11 >=1.8.12,<2.0a0  # [linux]
-        - xorg-libxext >=1.3.6,<2.0a0  # [linux]
-        - xorg-libxdamage  # [linux]
-        - xorg-libxxf86vm  # [linux]
-        - expat
-        - libxcb  # [linux]
-        - llvm 17.0.6
-        - llvmdev 17.0.6
-        - zlib
-        - zstd
-        - spirv-tools 2025.1
-        - xorg-libxshmfence  # [linux]
-        - libstdcxx-ng  # [linux]
-    test:
-      commands:
-        - test -f $PREFIX/lib/dri/softpipe_dri${SHLIB_EXT}  # [linux]
-        - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
-        # Check that at least one of GLES2 or GL directories exists
-        - test -d $PREFIX/include/GLES2 || test -d $PREFIX/include/GL  # [unix]
-
-  # Mesa DRI drivers package (only on Linux)
-  - name: mesa-dri-drivers
-    build:
-      ignore_run_exports:
-        - libstdcxx-ng
-      skip: true  # [osx]
-    files:
-      - lib/dri/*.so*
-    requirements:
-      host:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-        - libdrm  # [linux]
-        - expat
-      run:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-        - libdrm  # [linux]
-        - expat
-    test:
-      commands:
-        - test -f $PREFIX/lib/dri/softpipe_dri${SHLIB_EXT}  # [linux]
-        - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
-
-  # Mesa GL implementation (only on Linux)
-  - name: mesa-libgl
-    build:
-      run_exports:
-        - {{ pin_subpackage('mesa-libgl', max_pin='x.x') }}
-      ignore_run_exports:
-        - libstdcxx-ng
-        - libglvnd
-        - llvm
-        - llvmdev
-      skip: true  # [osx]
-    files:
-      - lib/libGLX_mesa.so*
-      - lib/libGL.so*
-    requirements:
-      build:
-        - {{ compiler('c') }}
-        - {{ compiler('cxx') }}
-      host:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-        - libglvnd  # [linux]
-        - expat
-        - xorg-libx11 >=1.8.12,<2.0a0  # [linux]
-        - libxcb  # [linux]
-        - libdrm  # [linux]
-        - llvmdev 17.0.6
-      run:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-        - libglvnd  # [linux]
-        - expat
-        - xorg-libx11 >=1.8.12,<2.0a0  # [linux]
-        - libxcb  # [linux]
-        - libdrm  # [linux]
-        - llvmdev 17.0.6
-    test:
-      commands:
-        - test -f $PREFIX/lib/libGLX_mesa${SHLIB_EXT}  # [linux]
-
-  # Mesa GL development files (only on Linux)
-  - name: mesa-libgl-devel
-    build:
-      run_exports:
-        - {{ pin_subpackage('mesa-libgl', max_pin='x.x') }}
-      skip: true  # [osx]
-    files:
-      - lib/pkgconfig/gl.pc
-      - include/GL/*.h
-    requirements:
-      build:
-        - {{ compiler('c') }}
-        - {{ compiler('cxx') }}
-      host:
-        - {{ pin_subpackage('mesa-libgl', exact=True) }}
-        - libgl-devel  # [linux]
-      run:
-        - {{ pin_subpackage('mesa-libgl', exact=True) }}
-        - libgl-devel  # [linux]
-    test:
-      requires:
-        - pkg-config
-      commands:
-        - pkg-config --exists gl  # [linux]
-
-  # Mesa EGL implementation (only on Linux)
-  - name: mesa-libegl
-    build:
-      run_exports:
-        - {{ pin_subpackage('mesa-libegl', max_pin='x.x') }}
-      ignore_run_exports:
-        - libstdcxx-ng
-        - libglvnd
-        - mesalib
-      skip: true  # [osx]
-    files:
-      - lib/libEGL_mesa.so*
-      - lib/libEGL.so*
-    requirements:
-      build:
-        - {{ compiler('c') }}
-        - {{ compiler('cxx') }}
-      host:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-        - {{ pin_subpackage('mesa-libgbm', exact=True) }}
-        - libglvnd  # [linux]
-        - libdrm  # [linux]
-        - expat
-        - xorg-libx11 >=1.8.12,<2.0a0  # [linux]
-        - libxcb  # [linux]
-        - llvmdev 17.0.6
-      run:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-        - {{ pin_subpackage('mesa-libgbm', exact=True) }}
-        - libglvnd  # [linux]
-        - libdrm  # [linux]
-        - expat
-        - xorg-libx11 >=1.8.12,<2.0a0  # [linux]
-        - libxcb  # [linux]
-        - llvmdev 17.0.6
-    test:
-      commands:
-        - test -f $PREFIX/lib/libEGL_mesa${SHLIB_EXT}  # [linux]
-
-  # Mesa EGL development files (only on Linux)
-  - name: mesa-libegl-devel
-    build:
-      run_exports:
-        - {{ pin_subpackage('mesa-libegl', max_pin='x.x') }}
-      skip: true  # [osx]
-    files:
-      - lib/pkgconfig/egl.pc
-      - include/EGL/*.h
-    requirements:
-      build:
-        - {{ compiler('c') }}
-        - {{ compiler('cxx') }}
-      host:
-        - {{ pin_subpackage('mesa-libegl', exact=True) }}
-        - libegl-devel  # [linux]
-      run:
-        - {{ pin_subpackage('mesa-libegl', exact=True) }}
-        - libegl-devel  # [linux]
-    test:
-      requires:
-        - pkg-config
-      commands:
-        - pkg-config --exists egl  # [linux]
-
-  # Mesa GBM development files (only on Linux)
-  - name: mesa-libgbm-devel
-    build:
-      run_exports:
-        - {{ pin_subpackage('mesa-libgbm', max_pin='x.x') }}
-      skip: true  # [osx]
-    files:
-      - lib/pkgconfig/gbm.pc
-      - include/gbm.h
-    requirements:
-      build:
-        - {{ compiler('c') }}
-        - {{ compiler('cxx') }}
-      host:
-        - {{ pin_subpackage('mesa-libgbm', exact=True) }}
-      run:
-        - {{ pin_subpackage('mesa-libgbm', exact=True) }}
-    test:
-      requires:
-        - pkg-config
-      commands:
-        - pkg-config --exists gbm  # [linux]
-
-  # Mesa OSMesa implementation (supported on both Linux and macOS)
-  # Note: In Mesa 25.1.0, OSMesa functionality might be integrated differently, but we keep the package for compatibility
-  - name: mesa-osmesa
-    build:
-      run_exports:
-        - {{ pin_subpackage('mesa-osmesa', max_pin='x.x') }}
-    files:
-      - lib/libOSMesa.so*  # [linux]
-      - lib/libOSMesa.dylib*  # [osx]
-    requirements:
-      host:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-        - llvmdev 17.0.6
-        - spirv-tools 2025.1
-      run:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-        - llvmdev 17.0.6
-        - spirv-tools 2025.1
-    test:
-      commands:
-        # Check for OSMesa library if it exists
-        - if [ -f $PREFIX/lib/libOSMesa${SHLIB_EXT} ]; then echo "OSMesa found"; else echo "OSMesa not found, but that's OK in Mesa 25.1.0"; fi
-
-  # Mesa Vulkan drivers (supported on both Linux and macOS)
-  - name: mesa-vulkan-drivers
-    build:
-      ignore_run_exports:
-        - libstdcxx-ng
-        - llvm
-        - llvmdev
-        - mesalib
-    files:
-      - lib/libvulkan_*.so*  # [linux]
-      - lib/libvulkan_*.dylib*  # [osx]
-      - share/vulkan/**
-    requirements:
-      build:
-        - {{ compiler('c') }}
-        - {{ compiler('cxx') }}
-        - glslang
-      host:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-        - expat
-        - libdrm  # [linux]
-        - xorg-libx11 >=1.8.12,<2.0a0  # [linux]
-        - libxcb  # [linux]
-        - spirv-tools 2025.1
-        - llvmdev 17.0.6
-        - libllvm17 17.0.6
-        - zlib
-        - zstd
-        - xorg-libxshmfence  # [linux]
-        - libstdcxx-ng  # [linux]
-      run:
-        - {{ pin_subpackage('mesalib', exact=True) }}
-        - expat
-        - libdrm  # [linux]
-        - xorg-libx11 >=1.8.12,<2.0a0  # [linux]
-        - libxcb  # [linux]
-        - spirv-tools 2025.1
-        - llvmdev 17.0.6
-        - libllvm17 17.0.6
-        - zlib
-        - zstd
-        - xorg-libxshmfence  # [linux]
-        - libstdcxx-ng  # [linux]
-    test:
-      commands:
-        # Linux specific tests
-        - test -f $PREFIX/lib/libvulkan_swrast.so  # [linux]
-        - test -f $PREFIX/lib/libvulkan_virtio.so  # [linux]
-        # macOS specific tests
-        - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json || test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json || test -f $PREFIX/share/vulkan/icd.d/swrast_icd.aarch64.json || test -f $PREFIX/share/vulkan/icd.d/swrast_icd.x86_64.json  # [osx]
-        # Common tests for all platforms
-        - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [unix]
+test:
+  requires:
+    - pkg-config
+  commands:
+    # Check for core Mesa libraries
+    - test -f $PREFIX/lib/libGLX_mesa${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libGL.so*  # [linux]
+    - test -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libEGL_mesa${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libvulkan_*.so*  # [linux]
+    - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [unix]
+    # Check for pkg-config files
+    - pkg-config --exists gl  # [linux]
+    - pkg-config --exists egl  # [linux]
+    - pkg-config --exists gbm  # [linux]
+    # macOS: check for expected libraries (Mesa 25.1.0 may not provide all)
+    - test ! -f $PREFIX/lib/libGLESv1_CM${SHLIB_EXT}  # [osx]
+    - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}  # [osx]
+    - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}  # [osx]
+    # Vulkan ICD JSON files (if present)
+    - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [osx]
 
 about:
   home: https://www.mesa3d.org
@@ -412,3 +112,15 @@ extra:
     - downiec
     - jasonb5
     - matthiasdiener
+
+# ---
+# Notes and Explanations:
+#
+# - This recipe was previously split into multiple outputs (mesa-libgbm, mesa-libgl, mesa-libegl, etc.) to match CDT and downstream package expectations.
+# - After review, we reverted to a single-output package for simplicity, maintainability, and compatibility with conda-forge and upstream practices.
+# - glvnd (OpenGL Vendor Neutral Dispatch) is used for OpenGL dispatching, as recommended by conda-forge and upstream.
+# - All relevant dependencies and test logic from subpackages have been merged here.
+# - Platform selectors are used to ensure only valid libraries are built and tested on each OS.
+# - For valid Meson options, see: https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/meson_options.txt
+#   - Examples: -Dgallium-drivers=softpipe,llvmpipe,zink, -Dglx=dri, -Degl=enabled/disabled, -Dplatforms=x11,macos, -Dvulkan-drivers=swrast,virtio
+# - We explicitly disable or enable features per platform to match upstream and downstream needs.

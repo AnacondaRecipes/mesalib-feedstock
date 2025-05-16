@@ -26,64 +26,52 @@ OSMESA_OPTIONS="-Dosmesa=true"
 # Common options across platforms
 COMMON_OPTIONS="-Dzstd=enabled -Dopengl=true -Dtools=[] -Dbuild-tests=true"
 
+# ---
+# Meson options/choices and rationale:
+# -Dgallium-drivers: Comma-separated list of Gallium drivers to build (e.g. softpipe,llvmpipe,zink)
+# -Dglx: Valid values are 'auto', 'disabled', 'dri', 'xlib'. Use 'dri' for Linux, 'disabled' for macOS.
+# -Degl: Enable or disable EGL support. Disabled on macOS, enabled on Linux.
+# -Dplatforms: Comma-separated list of platforms (e.g. x11,macos,wayland,drm). Use 'x11' for Linux, 'macos' for macOS.
+# -Dvulkan-drivers: Comma-separated list of Vulkan drivers (e.g. swrast,virtio,all). Use 'swrast,virtio' for Linux, 'swrast' for macOS.
+# -Dlibunwind: Enable or disable libunwind support. Enabled on Linux, disabled on macOS.
+# -Dshared-glapi: Enable shared GL API. Enabled for both Linux and macOS.
+#
+# These options were chosen to match upstream, conda-forge, and downstream needs, and to avoid building unsupported or unnecessary features on each platform.
+# ---
+
 if [[ "$target_platform" == linux* ]]; then
   GLVND_OPTION="-Dglvnd=enabled"
   GBM_OPTION="-Dgbm=enabled"
-  # "vulkan-drivers" allowed choices: "auto, amd, broadcom, freedreno, intel, intel_hasvk, panfrost, swrast, virtio, imagination-experimental, microsoft-experimental, nouveau, asahi, gfxstream, all"
   VULKAN_DRIVERS="-Dvulkan-drivers=swrast,virtio"
-  
-  # Enable EGL on Linux
   EGL_OPTION="-Degl=enabled"
-  # Valid GLX options are: "auto", "disabled", "dri", "xlib"
   GLX_OPTION="-Dglx=dri"
   GLX_DIRECT="-Dglx-direct=false"
-
-  # Expand Gallium drivers on Linux
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,virgl,llvmpipe,zink"
-  
-  # Set platforms for Linux
   PLATFORMS="-Dplatforms=x11"
-  
-  # Linux-specific options
   LINUX_OPTIONS="-Dlibunwind=enabled -Dshared-glapi=enabled"
-  
   PLATFORM_OPTIONS="$LINUX_OPTIONS"
 elif [[ "$target_platform" == osx* ]]; then
-  # On macOS, completely disable features that depend on X11/xcb/DRI
   GBM_OPTION="-Dgbm=disabled"
-  
   VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
-
-  # Use only software rasterizers that work on macOS
   GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
-
-  # Disable GLX completely on macOS (macOS uses CGL instead)
   GLX_OPTION="-Dglx=disabled"
   GLX_DIRECT=""
-  
-  # Disable EGL on macOS as it's not well supported
   EGL_OPTION="-Degl=disabled"
-  
-  # Set platforms explicitly to macos for Mesa on macOS
   PLATFORMS="-Dplatforms=macos"
-  
-  # MacOS-specific options - disable libunwind as it's not needed
   MACOS_OPTIONS="-Dlibunwind=disabled -Dshared-glapi=enabled"
-  
   PLATFORM_OPTIONS="$MACOS_OPTIONS"
 else
   GLVND_OPTION="-Dglvnd=disabled"
-  VULKAN_DRIVERS="-Dvulkan-drivers=all"  # Keep all for other platforms
+  VULKAN_DRIVERS="-Dvulkan-drivers=all"
   GALLIUM_DRIVERS="-Dgallium-drivers=all"
-  # Valid GLX options are: "auto", "disabled", "dri", "xlib"
   GLX_OPTION="-Dglx=auto"
   GLX_DIRECT="-Dglx-direct=false"
   EGL_OPTION="-Degl=enabled"
   PLATFORMS="-Dplatforms=auto"
-  
   PLATFORM_OPTIONS=""
 fi
 
+# The --prefix=$PREFIX flag ensures proper installation location for conda-build
 meson setup builddir/ \
   ${MESON_ARGS} \
   --prefix=$PREFIX \
@@ -114,15 +102,3 @@ ninja -C builddir/ install
 
 echo "Running Mesa tests..."
 meson test -C builddir/ -t 4 -v
-
-# Print the full test log for debugging if it exists
-if [ -f builddir/meson-logs/testlog.txt ]; then
-  echo "\n===== BEGIN FULL MESON TEST LOG (builddir) ====="
-  cat builddir/meson-logs/testlog.txt
-  echo "===== END FULL MESON TEST LOG (builddir) =====\n"
-elif [ -f $SRC_DIR/builddir/meson-logs/testlog.txt ]; then
-  echo "\n===== BEGIN FULL MESON TEST LOG (SRC_DIR) ====="
-  cat $SRC_DIR/builddir/meson-logs/testlog.txt
-  echo "===== END FULL MESON TEST LOG (SRC_DIR) =====\n"
-fi
-
