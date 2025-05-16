@@ -23,7 +23,11 @@ EGL_OPTION="-Degl=disabled"
 GBM_OPTION="-Dgbm=disabled"
 GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
 VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
-GLVND_OPTION="-Dglvnd=enabled"
+
+# glvnd must be disabled if both GLX and EGL are disabled; Meson requires at least one for glvnd support.
+# This matches conda-forge and modern best practices: let the system or other packages provide glvnd.
+GLVND_OPTION="-Dglvnd=disabled"
+
 PLATFORMS="-Dplatforms=x11"
 COMMON_OPTIONS="-Dzstd=enabled -Dopengl=true -Dtools=[] -Dbuild-tests=true"
 LINUX_OPTIONS="-Dlibunwind=enabled -Dshared-glapi=enabled"
