@@ -117,8 +117,12 @@ meson test -C builddir/ -t 4 -v
 
 # Print the full test log for debugging if it exists
 if [ -f builddir/meson-logs/testlog.txt ]; then
-  echo "\n===== BEGIN FULL MESON TEST LOG ====="
+  echo "\n===== BEGIN FULL MESON TEST LOG (builddir) ====="
   cat builddir/meson-logs/testlog.txt
-  echo "===== END FULL MESON TEST LOG =====\n"
+  echo "===== END FULL MESON TEST LOG (builddir) =====\n"
+elif [ -f $SRC_DIR/builddir/meson-logs/testlog.txt ]; then
+  echo "\n===== BEGIN FULL MESON TEST LOG (SRC_DIR) ====="
+  cat $SRC_DIR/builddir/meson-logs/testlog.txt
+  echo "===== END FULL MESON TEST LOG (SRC_DIR) =====\n"
 fi
 
