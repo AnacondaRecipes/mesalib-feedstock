@@ -36,42 +36,42 @@ requirements:
     - git  # [linux]
   host:
     - expat 2.5.0
+    - zlib
+    - zstd
     - libdrm  # [linux]
+    - spirv-tools 2025.1
+    - llvm 17.0.6
+    - llvmdev 17.0.6
+    - libxcb  # [linux]
+    - xorg-libx11  # [linux]
+    - xorg-xorgproto  # [linux]
+    - xorg-libxrandr  # [linux]
+    - xorg-libxshmfence  # [linux]
+    - xorg-libxfixes 6.0.1  # [linux]
+    - xorg-libxdamage  # [linux]
+    - xorg-libxxf86vm  # [linux]
     - libgl-devel  # [linux]
-    - libglvnd  # [linux]  # glvnd is the OpenGL vendor-neutral dispatch library
+    - libglvnd  # [linux]
     - libglvnd-devel  # [linux]
     - libunwind 1.5.0  # [linux]
-    - libxcb  # [linux]
-    - llvm 17.0.6
-    - llvmdev 17.0.6
-    - spirv-tools 2025.1
-    - xorg-libx11  # [linux]
-    - xorg-libxdamage  # [linux]
-    - xorg-libxfixes 6.0.1  # [linux]
-    - xorg-libxrandr  # [linux]
-    - xorg-libxshmfence  # [linux]
-    - xorg-libxxf86vm  # [linux]
-    - xorg-xorgproto  # [linux]
-    - zlib
-    - zstd
   run:
     - expat 2.5.0
-    - libdrm  # [linux]
-    - libglvnd  # [linux]
-    - libunwind 1.5.0  # [linux]
-    - libxcb  # [linux]
-    - llvm 17.0.6
-    - llvmdev 17.0.6
-    - spirv-tools 2025.1
-    - xorg-libx11  # [linux]
-    - xorg-libxdamage  # [linux]
-    - xorg-libxfixes 6.0.1  # [linux]
-    - xorg-libxrandr  # [linux]
-    - xorg-libxshmfence  # [linux]
-    - xorg-libxxf86vm  # [linux]
-    - xorg-xorgproto  # [linux]
     - zlib
     - zstd
+    - libdrm  # [linux]
+    - spirv-tools 2025.1
+    - llvm 17.0.6
+    - llvmdev 17.0.6
+    - libxcb  # [linux]
+    - xorg-libx11  # [linux]
+    - xorg-xorgproto  # [linux]
+    - xorg-libxrandr  # [linux]
+    - xorg-libxshmfence  # [linux]
+    - xorg-libxfixes 6.0.1  # [linux]
+    - xorg-libxdamage  # [linux]
+    - xorg-libxxf86vm  # [linux]
+    - libglvnd  # [linux]
+    - libunwind 1.5.0  # [linux]
 
 test:
   requires:

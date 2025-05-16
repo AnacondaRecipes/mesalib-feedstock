@@ -28,7 +28,13 @@ VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
 # This matches conda-forge and modern best practices: let the system or other packages provide glvnd.
 GLVND_OPTION="-Dglvnd=disabled"
 
-PLATFORMS="-Dplatforms=x11"
+# Set platforms option based on target platform
+if [[ "$target_platform" == osx* ]]; then
+  PLATFORMS="-Dplatforms=macos"
+else
+  PLATFORMS="-Dplatforms=x11"
+fi
+
 COMMON_OPTIONS="-Dzstd=enabled -Dopengl=true -Dtools=[] -Dbuild-tests=true"
 LINUX_OPTIONS="-Dlibunwind=enabled -Dshared-glapi=enabled"
 OSMESA_OPTIONS="-Dosmesa=true"
