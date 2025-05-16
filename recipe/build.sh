@@ -115,3 +115,10 @@ ninja -C builddir/ install
 echo "Running Mesa tests..."
 meson test -C builddir/ -t 4 -v
 
+# Print the full test log for debugging if it exists
+if [ -f builddir/meson-logs/testlog.txt ]; then
+  echo "\n===== BEGIN FULL MESON TEST LOG ====="
+  cat builddir/meson-logs/testlog.txt
+  echo "===== END FULL MESON TEST LOG =====\n"
+fi
+
