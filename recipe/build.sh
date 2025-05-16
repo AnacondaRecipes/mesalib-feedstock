@@ -17,14 +17,21 @@ if [[ $CONDA_BUILD_CROSS_COMPILATION == "1" ]]; then
   fi
 fi
 
-# OpenCL is disabled - removed deprecated options
+# Always disable GLX, EGL, and GBM to match conda-forge and modern glvnd-based OpenGL usage
+GLX_OPTION="-Dglx=disabled"
+EGL_OPTION="-Degl=disabled"
+GBM_OPTION="-Dgbm=disabled"
+GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
+VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
+GLVND_OPTION="-Dglvnd=enabled"
+PLATFORMS="-Dplatforms=x11"
+COMMON_OPTIONS="-Dzstd=enabled -Dopengl=true -Dtools=[] -Dbuild-tests=true"
+LINUX_OPTIONS="-Dlibunwind=enabled -Dshared-glapi=enabled"
+OSMESA_OPTIONS="-Dosmesa=true"
 OPENCL_OPTIONS="-Dgallium-opencl=disabled"
 
 # OSMesa options - Mesa 25.1.0 still supports OSMesa but the interface has changed
 OSMESA_OPTIONS="-Dosmesa=true"
-
-# Common options across platforms
-COMMON_OPTIONS="-Dzstd=enabled -Dopengl=true -Dtools=[] -Dbuild-tests=true"
 
 # ---
 # Meson options/choices and rationale:
@@ -39,38 +46,6 @@ COMMON_OPTIONS="-Dzstd=enabled -Dopengl=true -Dtools=[] -Dbuild-tests=true"
 # These options were chosen to match upstream, conda-forge, and downstream needs, and to avoid building unsupported or unnecessary features on each platform.
 # ---
 
-if [[ "$target_platform" == linux* ]]; then
-  GLVND_OPTION="-Dglvnd=enabled"
-  GBM_OPTION="-Dgbm=enabled"
-  VULKAN_DRIVERS="-Dvulkan-drivers=swrast,virtio"
-  EGL_OPTION="-Degl=enabled"
-  GLX_OPTION="-Dglx=dri"
-  GLX_DIRECT="-Dglx-direct=false"
-  GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,virgl,llvmpipe,zink"
-  PLATFORMS="-Dplatforms=x11"
-  LINUX_OPTIONS="-Dlibunwind=enabled -Dshared-glapi=enabled"
-  PLATFORM_OPTIONS="$LINUX_OPTIONS"
-elif [[ "$target_platform" == osx* ]]; then
-  GBM_OPTION="-Dgbm=disabled"
-  VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
-  GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
-  GLX_OPTION="-Dglx=disabled"
-  GLX_DIRECT=""
-  EGL_OPTION="-Degl=disabled"
-  PLATFORMS="-Dplatforms=macos"
-  MACOS_OPTIONS="-Dlibunwind=disabled -Dshared-glapi=enabled"
-  PLATFORM_OPTIONS="$MACOS_OPTIONS"
-else
-  GLVND_OPTION="-Dglvnd=disabled"
-  VULKAN_DRIVERS="-Dvulkan-drivers=all"
-  GALLIUM_DRIVERS="-Dgallium-drivers=all"
-  GLX_OPTION="-Dglx=auto"
-  GLX_DIRECT="-Dglx-direct=false"
-  EGL_OPTION="-Degl=enabled"
-  PLATFORMS="-Dplatforms=auto"
-  PLATFORM_OPTIONS=""
-fi
-
 # The --prefix=$PREFIX flag ensures proper installation location for conda-build
 meson setup builddir/ \
   ${MESON_ARGS} \
@@ -82,16 +57,15 @@ meson setup builddir/ \
   -Dgallium-va=disabled \
   -Dgallium-vdpau=disabled \
   -Dgles1=disabled \
-  -Dgles2=enabled \
+  -Dgles2=disabled \
   $GBM_OPTION \
   $GLVND_OPTION \
   $GLX_OPTION \
-  $GLX_DIRECT \
   $EGL_OPTION \
   -Dllvm=enabled \
   -Dshared-llvm=enabled \
   $COMMON_OPTIONS \
-  $PLATFORM_OPTIONS \
+  $LINUX_OPTIONS \
   $OSMESA_OPTIONS \
   $OPENCL_OPTIONS \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }

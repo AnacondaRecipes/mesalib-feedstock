@@ -9,8 +9,12 @@ source:
   sha256: b1c45888969ee5df997e2542654f735ab1b772924b442f3016d2293414c99c14
 
 build:
-  skip: true  # [win]
   number: 0
+  skip: true  # [win]
+  track_features:
+    - mesalib
+  run_exports:
+    - {{ pin_subpackage('mesalib', max_pin='x.x') }}
 
 requirements:
   build:
@@ -73,23 +77,22 @@ test:
   requires:
     - pkg-config
   commands:
-    # Check for core Mesa libraries
-    - test -f $PREFIX/lib/libGLX_mesa${SHLIB_EXT}  # [linux]
-    - test -f $PREFIX/lib/libGL.so*  # [linux]
-    - test -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
-    - test -f $PREFIX/lib/libEGL_mesa${SHLIB_EXT}  # [linux]
-    - test -f $PREFIX/lib/libvulkan_*.so*  # [linux]
-    - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [unix]
-    # Check for pkg-config files
-    - pkg-config --exists gl  # [linux]
-    - pkg-config --exists egl  # [linux]
-    - pkg-config --exists gbm  # [linux]
-    # macOS: check for expected libraries (Mesa 25.1.0 may not provide all)
-    - test ! -f $PREFIX/lib/libGLESv1_CM${SHLIB_EXT}  # [osx]
-    - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}  # [osx]
+    # Assert that we did NOT build screen rendering capabilities (GLX, EGL, classic libGL)
+    # This matches conda-forge and glvnd-based OpenGL usage
+    - test ! -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/libGLESv1_CM${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/libEGL${SHLIB_EXT}  # [linux]
+    - test ! -f $PREFIX/lib/libGL${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}  # [unix]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json  # [x86_64]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json  # [aarch64]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.ppc64le.json  # [ppc64le]
+    - test ! -f $PREFIX/lib/libGLESv1_CM.1${SHLIB_EXT}  # [osx]
+    - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}  # [osx]
     - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}  # [osx]
-    # Vulkan ICD JSON files (if present)
-    - test -n "$(ls -A $PREFIX/share/vulkan/icd.d/*.json 2>/dev/null)"  # [osx]
 
 about:
   home: https://www.mesa3d.org
