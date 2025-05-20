@@ -35,7 +35,7 @@ requirements:
     - glslang
     - git  # [linux]
   host:
-    - expat 2.5.0
+    - expat
     - zlib
     - zstd
     - libdrm  # [linux]
@@ -55,23 +55,23 @@ requirements:
     - libglvnd-devel  # [linux]
     - libunwind 1.5.0  # [linux]
   run:
-    - expat 2.5.0
+    - expat
     - zlib
     - zstd
     - libdrm  # [linux]
-    - spirv-tools 2025.1
-    - llvm 17.0.6
-    - llvmdev 17.0.6
+    - spirv-tools
+    - llvm
+    - llvmdev
     - libxcb  # [linux]
     - xorg-libx11  # [linux]
     - xorg-xorgproto  # [linux]
     - xorg-libxrandr  # [linux]
     - xorg-libxshmfence  # [linux]
-    - xorg-libxfixes 6.0.1  # [linux]
+    - xorg-libxfixes  # [linux]
     - xorg-libxdamage  # [linux]
     - xorg-libxxf86vm  # [linux]
     - libglvnd  # [linux]
-    - libunwind 1.5.0  # [linux]
+    - libunwind  # [linux]
 
 test:
   requires:
