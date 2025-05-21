@@ -15,6 +15,8 @@ build:
     - mesalib
   run_exports:
     - {{ pin_subpackage('mesalib', max_pin='x.x') }}
+  ignore_run_exports:  # [linux]
+    - libunwind        # [linux]
 
 requirements:
   build:
@@ -52,7 +54,6 @@ requirements:
     - spirv-tools
     - libxcb  # [linux]
     - xorg-libx11  # [linux]
-    - xorg-libxrandr  # [linux]
     - xorg-libxshmfence  # [linux]
 test:
   requires:
