@@ -62,7 +62,7 @@ meson setup builddir/ \
   -Dbuild-tests=true \
   -Dlibunwind=enabled \
   -Dshared-glapi=enabled \
-  -Dosmesa=true \
+  -Dosmesa=disabled \
   -Dgallium-opencl=disabled \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }
 
