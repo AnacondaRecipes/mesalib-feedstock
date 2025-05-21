@@ -42,6 +42,7 @@ requirements:
     - xorg-libx11  # [linux]
     - xorg-libxrandr  # [linux]
     - xorg-libxshmfence  # [linux]
+    - libunwind 1.5.0  # [linux]
   run:
     - expat
     - zlib
