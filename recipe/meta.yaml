@@ -47,6 +47,7 @@ requirements:
     - expat
     - zlib
     - zstd
+    - libllvm15
     - libdrm  # [linux]
     - spirv-tools
     - libxcb  # [linux]
