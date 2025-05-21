@@ -48,7 +48,7 @@ requirements:
     - zstd
     - libdrm  # [linux]
     - spirv-tools
-    - libllbm15
+    - libllvm15
     - libxcb  # [linux]
     - xorg-libx11  # [linux]
     - xorg-libxrandr  # [linux]
