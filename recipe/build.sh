@@ -17,31 +17,12 @@ if [[ $CONDA_BUILD_CROSS_COMPILATION == "1" ]]; then
   fi
 fi
 
-# Always disable GLX, EGL, and GBM to match conda-forge and modern glvnd-based OpenGL usage
-GLX_OPTION="-Dglx=disabled"
-EGL_OPTION="-Degl=disabled"
-GBM_OPTION="-Dgbm=disabled"
-GALLIUM_DRIVERS="-Dgallium-drivers=softpipe,llvmpipe"
-VULKAN_DRIVERS="-Dvulkan-drivers=swrast"
-
-# glvnd must be disabled if both GLX and EGL are disabled; Meson requires at least one for glvnd support.
-# This matches conda-forge and modern best practices: let the system or other packages provide glvnd.
-GLVND_OPTION="-Dglvnd=disabled"
-
 # Set platforms option based on target platform
 if [[ "$target_platform" == osx* ]]; then
   PLATFORMS="-Dplatforms=macos"
 else
   PLATFORMS="-Dplatforms=x11"
 fi
-
-COMMON_OPTIONS="-Dzstd=enabled -Dopengl=true -Dtools=[] -Dbuild-tests=true"
-LINUX_OPTIONS="-Dlibunwind=enabled -Dshared-glapi=enabled"
-OSMESA_OPTIONS="-Dosmesa=true"
-OPENCL_OPTIONS="-Dgallium-opencl=disabled"
-
-# OSMesa options - Mesa 25.1.0 still supports OSMesa but the interface has changed
-OSMESA_OPTIONS="-Dosmesa=true"
 
 # ---
 # Meson options/choices and rationale:
@@ -53,31 +34,36 @@ OSMESA_OPTIONS="-Dosmesa=true"
 # -Dlibunwind: Enable or disable libunwind support. Enabled on Linux, disabled on macOS.
 # -Dshared-glapi: Enable shared GL API. Enabled for both Linux and macOS.
 #
-# These options were chosen to match upstream, conda-forge, and downstream needs, and to avoid building unsupported or unnecessary features on each platform.
+# See https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/meson.options
 # ---
 
 # The --prefix=$PREFIX flag ensures proper installation location for conda-build
+# We might want to have a static link of llvm (-Dshared-llvm=false). Similar to https://github.com/AnacondaRecipes/llvmlite-feedstock/pull/15
 meson setup builddir/ \
   ${MESON_ARGS} \
   --prefix=$PREFIX \
   -Dlibdir=lib \
   $PLATFORMS \
-  $VULKAN_DRIVERS \
-  $GALLIUM_DRIVERS \
+  -Dvulkan-drivers=swrast \
+  -Dgallium-drivers=softpipe,llvmpipe \
   -Dgallium-va=disabled \
   -Dgallium-vdpau=disabled \
   -Dgles1=disabled \
   -Dgles2=disabled \
-  $GBM_OPTION \
-  $GLVND_OPTION \
-  $GLX_OPTION \
-  $EGL_OPTION \
+  -Dgbm=disabled \
+  -Dglvnd=disabled \
+  -Dglx=disabled \
+  -Degl=disabled \
   -Dllvm=enabled \
-  -Dshared-llvm=enabled \
-  $COMMON_OPTIONS \
-  $LINUX_OPTIONS \
-  $OSMESA_OPTIONS \
-  $OPENCL_OPTIONS \
+  -Dshared-llvm=false \
+  -Dzstd=enabled \
+  -Dopengl=true \
+  -Dtools=[] \
+  -Dbuild-tests=true \
+  -Dlibunwind=enabled \
+  -Dshared-glapi=enabled \
+  -Dosmesa=true \
+  -Dgallium-opencl=disabled \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }
 
 ninja -C builddir/ -j ${CPU_COUNT}

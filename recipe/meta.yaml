@@ -20,7 +20,6 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
-    - {{ compiler('rust') }}
     - meson >=0.63.0
     - ninja
     - pyyaml
@@ -30,8 +29,6 @@ requirements:
     - flex
     - bison
     - pkg-config
-    - llvm
-    - llvmdev  # [build_platform != target_platform]
     - glslang
     - git  # [linux]
   host:
@@ -40,39 +37,22 @@ requirements:
     - zstd
     - libdrm  # [linux]
     - spirv-tools 2025.1
-    - llvm 17.0.6
-    - llvmdev 17.0.6
+    - llvmdev 15
     - libxcb  # [linux]
     - xorg-libx11  # [linux]
-    - xorg-xorgproto  # [linux]
     - xorg-libxrandr  # [linux]
     - xorg-libxshmfence  # [linux]
-    - xorg-libxfixes 6.0.1  # [linux]
-    - xorg-libxdamage  # [linux]
-    - xorg-libxxf86vm  # [linux]
-    - libgl-devel  # [linux]
-    - libglvnd  # [linux]
-    - libglvnd-devel  # [linux]
-    - libunwind 1.5.0  # [linux]
   run:
     - expat
     - zlib
     - zstd
     - libdrm  # [linux]
     - spirv-tools
-    - llvm
-    - llvmdev
+    - libllbm15
     - libxcb  # [linux]
     - xorg-libx11  # [linux]
-    - xorg-xorgproto  # [linux]
     - xorg-libxrandr  # [linux]
     - xorg-libxshmfence  # [linux]
-    - xorg-libxfixes  # [linux]
-    - xorg-libxdamage  # [linux]
-    - xorg-libxxf86vm  # [linux]
-    - libglvnd  # [linux]
-    - libunwind  # [linux]
-
 test:
   requires:
     - pkg-config
@@ -86,13 +66,16 @@ test:
     - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}  # [linux]
     - test ! -f $PREFIX/lib/libEGL${SHLIB_EXT}  # [linux]
     - test ! -f $PREFIX/lib/libGL${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libOSMesa${SHLIB_EXT}  # [linux]
     - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}  # [unix]
     - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json  # [x86_64]
     - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json  # [aarch64]
     - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.ppc64le.json  # [ppc64le]
     - test ! -f $PREFIX/lib/libGLESv1_CM.1${SHLIB_EXT}  # [osx]
     - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}  # [osx]
+    - test -f $PREFIX/lib/libOSMesa.8${SHLIB_EXT}     # [osx]
     - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}  # [osx]
+    - pkg-config --exists osmesa
 
 about:
   home: https://www.mesa3d.org
@@ -115,15 +98,3 @@ extra:
     - downiec
     - jasonb5
     - matthiasdiener
-
-# ---
-# Notes and Explanations:
-#
-# - This recipe was previously split into multiple outputs (mesa-libgbm, mesa-libgl, mesa-libegl, etc.) to match CDT and downstream package expectations.
-# - After review, we reverted to a single-output package for simplicity, maintainability, and compatibility with conda-forge and upstream practices.
-# - glvnd (OpenGL Vendor Neutral Dispatch) is used for OpenGL dispatching, as recommended by conda-forge and upstream.
-# - All relevant dependencies and test logic from subpackages have been merged here.
-# - Platform selectors are used to ensure only valid libraries are built and tested on each OS.
-# - For valid Meson options, see: https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/meson_options.txt
-#   - Examples: -Dgallium-drivers=softpipe,llvmpipe,zink, -Dglx=dri, -Degl=enabled/disabled, -Dplatforms=x11,macos, -Dvulkan-drivers=swrast,virtio
-# - We explicitly disable or enable features per platform to match upstream and downstream needs.
