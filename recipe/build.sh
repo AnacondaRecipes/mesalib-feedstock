@@ -55,14 +55,14 @@ meson setup builddir/ \
   -Dglx=disabled \
   -Degl=disabled \
   -Dllvm=enabled \
-  -Dshared-llvm=false \
+  -Dshared-llvm=true \
   -Dzstd=enabled \
   -Dopengl=true \
   -Dtools=[] \
   -Dbuild-tests=true \
   -Dlibunwind=enabled \
   -Dshared-glapi=enabled \
-  -Dosmesa=disabled \
+  -Dosmesa=false \
   -Dgallium-opencl=disabled \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }
 
