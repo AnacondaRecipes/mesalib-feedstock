@@ -37,7 +37,7 @@ requirements:
     - zstd
     - libdrm  # [linux]
     - spirv-tools 2025.1
-    #- llvmdev 15
+    - llvmdev 15
     - libxcb  # [linux]
     - xorg-libx11  # [linux]
     - xorg-libxrandr  # [linux]
@@ -49,7 +49,6 @@ requirements:
     - zstd
     - libdrm  # [linux]
     - spirv-tools
-    - libllvm15
     - libxcb  # [linux]
     - xorg-libx11  # [linux]
     - xorg-libxrandr  # [linux]
