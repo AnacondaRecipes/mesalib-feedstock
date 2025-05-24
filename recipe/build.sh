@@ -17,53 +17,74 @@ if [[ $CONDA_BUILD_CROSS_COMPILATION == "1" ]]; then
   fi
 fi
 
-# Set platforms option based on target platform
-if [[ "$target_platform" == osx* ]]; then
-  PLATFORMS="-Dplatforms=macos"
-else
-  PLATFORMS="-Dplatforms=x11"
-fi
-
 # ---
 # Meson options/choices and rationale:
 # -Dgallium-drivers: Comma-separated list of Gallium drivers to build (e.g. softpipe,llvmpipe,zink)
 # -Dglx: Valid values are 'auto', 'disabled', 'dri', 'xlib'. Use 'dri' for Linux, 'disabled' for macOS.
 # -Degl: Enable or disable EGL support. Disabled on macOS, enabled on Linux.
 # -Dplatforms: Comma-separated list of platforms (e.g. x11,macos,wayland,drm). Use 'x11' for Linux, 'macos' for macOS.
-# -Dvulkan-drivers: Comma-separated list of Vulkan drivers (e.g. swrast,virtio,all). Use 'swrast,virtio' for Linux, 'swrast' for macOS.
+# -Dvulkan-drivers: Comma-separated list of Vulkan drivers (e.g. swrast,virtio,all). Use 'swrast' for Linux and macOS.
 # -Dlibunwind: Enable or disable libunwind support. Enabled on Linux, disabled on macOS.
 # -Dshared-glapi: Enable shared GL API. Enabled for both Linux and macOS.
 #
 # See https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/meson.options
 # ---
 
+# Set platforms option based on target platform
+if [[ "$target_platform" == osx* ]]; then
+  MESA_OPTS="
+    ${MESA_OPTS}
+    -Dplatforms=macos
+    -Dgbm=disabled
+    -Dglx=disabled
+    -Degl=disabled
+    -Dglvnd=disabled
+  "
+else
+  MESA_OPTS="
+    ${MESA_OPTS}
+    -Dplatforms=x11
+    -Dlegacy-x11=dri2
+    -Dgbm=enabled
+    -Dglx=dri
+    -Degl=enabled
+    -Dglvnd=enabled
+  "
+
+  # GLVND needs the path to the vendor's OpenGL implementation via config file.
+  mkdir -p "${PREFIX}/etc/conda/activate.d"
+  cp ${RECIPE_DIR}/activate.sh ${PREFIX}/etc/conda/activate.d/
+
+  mkdir -p "${PREFIX}/etc/conda/deactivate.d"
+  cp ${RECIPE_DIR}/deactivate.sh ${PREFIX}/etc/conda/deactivate.d/
+
+  # Silences a warning from libGL when it runs.
+  mkdir -p "${PREFIX}/etc/drirc"
+  touch "${PREFIX}/etc/drirc/.keep"
+fi
+
 # The --prefix=$PREFIX flag ensures proper installation location for conda-build
 # We might want to have a static link of llvm (-Dshared-llvm=false). Similar to https://github.com/AnacondaRecipes/llvmlite-feedstock/pull/15
 meson setup builddir/ \
   ${MESON_ARGS} \
+  --buildtype=release \
   --prefix=$PREFIX \
   -Dlibdir=lib \
-  $PLATFORMS \
+  $MESA_OPTS \
   -Dvulkan-drivers=swrast \
   -Dgallium-drivers=softpipe,llvmpipe \
   -Dgallium-va=disabled \
   -Dgallium-vdpau=disabled \
   -Dgles1=disabled \
   -Dgles2=disabled \
-  -Dgbm=disabled \
-  -Dglvnd=disabled \
-  -Dglx=disabled \
-  -Degl=disabled \
+  -Degl-native-platform=surfaceless \
   -Dllvm=enabled \
-  -Dshared-llvm=true \
-  -Dzstd=enabled \
+  -Dshared-llvm=enabled \
   -Dopengl=true \
-  -Dtools=[] \
   -Dbuild-tests=true \
   -Dlibunwind=enabled \
   -Dshared-glapi=enabled \
-  -Dosmesa=false \
-  -Dgallium-opencl=disabled \
+  -Dxmlconfig=enabled \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }
 
 ninja -C builddir/ -j ${CPU_COUNT}

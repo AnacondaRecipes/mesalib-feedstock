@@ -1,4 +1,4 @@
-{% set version = "25.1.0" %}
+{% set version = "25.1.1" %}
 
 package:
   name: mesalib
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://archive.mesa3d.org/mesa-{{ version }}.tar.xz
-  sha256: b1c45888969ee5df997e2542654f735ab1b772924b442f3016d2293414c99c14
+  sha256: cf942a18b7b9e9b88524dcbf0b31fed3cde18e6d52b3375b0ab6587a14415bce
 
 build:
   number: 0
@@ -17,65 +17,77 @@ build:
     - {{ pin_subpackage('mesalib', max_pin='x.x') }}
   ignore_run_exports:  # [linux]
     - libunwind        # [linux]
+    - libglvnd-devel   # [linux]
 
 requirements:
   build:
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - meson >=0.63.0
-    - ninja
+    - cmake
+    - ninja  # [win]
     - pyyaml
     - mako
+    # packaging is used to check versions at build time
     - packaging
-    - python 3.12
     - flex
     - bison
     - pkg-config
     - glslang
-    - git  # [linux]
   host:
     - expat
     - zlib
     - zstd
-    - libdrm  # [linux]
     - spirv-tools 2025.1
     - llvmdev 15
-    - libxcb  # [linux]
-    - xorg-libx11  # [linux]
-    - xorg-libxrandr  # [linux]
+    - libxcb             # [linux]
+    - libdrm             # [linux]
+    - libglvnd-devel     # [linux]
+    - libunwind 1.5.0    # [linux]
+    - xorg-libx11        # [linux]
+    - xorg-libxext       # [linux]
+    - xorg-libxfixes     # [linux]
+    - xorg-libxrandr     # [linux]
     - xorg-libxshmfence  # [linux]
-    - libunwind 1.5.0  # [linux]
+    - xorg-libxxf86vm    # [linux]
   run:
-    - expat
-    - zlib
-    - zstd
     - libllvm15
-    - libdrm  # [linux]
-    - spirv-tools
-    - libxcb  # [linux]
-    - xorg-libx11  # [linux]
-    - xorg-libxshmfence  # [linux]
+
 test:
-  requires:
-    - pkg-config
+  files:                     # [linux]
+    - test/CMakeLists.txt    # [linux]
+    - test/test_egl.cpp      # [linux]
+  requires:                  # [linux]
+    - {{ compiler('cxx') }}  # [linux]
+    - pkg-config             # [linux]
+    - cmake                  # [linux]
+    - libegl-devel           # [linux]
   commands:
-    # We assert that we didn't build screen rendering capabilities.
-    # We want on-screen rendering capabilities to be hardware accelerated
-    # but that will take more effort
-    - test ! -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/libgbm${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/libGLESv1_CM${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/libGLESv2${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/libEGL${SHLIB_EXT}  # [linux]
-    - test ! -f $PREFIX/lib/libGL${SHLIB_EXT}  # [linux]
-    - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}  # [unix]
-    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json  # [x86_64]
-    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json  # [aarch64]
-    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.ppc64le.json  # [ppc64le]
+    # We assert that we didn't build hardware accelerated screen rendering capabilities.
+    # We want on-screen rendering capabilities to be hardware accelerated but that will take more effort.
+    - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}        # [linux]
+    - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}            # [linux]
+    - test -f $PREFIX/lib/libgbm${SHLIB_EXT}                    # [linux]
+    - test -f $PREFIX/lib/libGLX_mesa${SHLIB_EXT}               # [linux]
+    - test -f $PREFIX/lib/libEGL_mesa${SHLIB_EXT}               # [linux]
+    - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}             # [unix]
+    - test -f $PREFIX/lib/gallium-pipe/pipe_swrast${SHLIB_EXT}  # [unix]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json    # [x86_64]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json   # [aarch64]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.ppc64le.json   # [ppc64le]
+
     - test ! -f $PREFIX/lib/libGLESv1_CM.1${SHLIB_EXT}  # [osx]
-    - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}  # [osx]
-    - test ! -f $PREFIX/lib/libGL.1${SHLIB_EXT}  # [osx]
+    - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}     # [osx]
+    - test ! -f $PREFIX/lib/libGL${SHLIB_EXT}           # [osx]
+    - test ! -f $PREFIX/lib/libEGL${SHLIB_EXT}          # [osx]
+    - test ! -f $PREFIX/lib/libGLX${SHLIB_EXT}          # [osx]
+
+    - pkg-config --exists gbm       # [linux]
+
+    - cd test     # [linux]
+    - cmake .     # [linux]
+    - make        # [linux]
+    - ./test_egl  # [linux]
 
 about:
   home: https://www.mesa3d.org
@@ -84,7 +96,8 @@ about:
   license_file: docs/license.rst
   summary: Mesa is an open-source implementation of the OpenGL specification - a system for rendering interactive 3D graphics.
   description: |
-    Mesa is a collection of graphics libraries and drivers that implement a variety of APIs such as OpenGL, Vulkan, and others. It provides software rendering and hardware acceleration for 3D graphics.
+    Mesa is a collection of graphics libraries and drivers that implement a variety of APIs such as OpenGL, Vulkan, and
+    others. It provides software rendering and hardware acceleration for 3D graphics.
   dev_url: https://gitlab.freedesktop.org/mesa/mesa
   doc_url: https://docs.mesa3d.org/
 
