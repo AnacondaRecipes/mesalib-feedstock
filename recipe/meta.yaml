@@ -58,8 +58,10 @@ test:
     - test/CMakeLists.txt    # [linux]
     - test/test_egl.cpp      # [linux]
   requires:                  # [linux]
+    - {{ compiler('c') }}    # [linux]
     - {{ compiler('cxx') }}  # [linux]
     - pkg-config             # [linux]
+    - make                   # [linux]
     - cmake                  # [linux]
     - libegl-devel           # [linux]
   commands:
