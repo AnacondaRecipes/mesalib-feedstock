@@ -52,6 +52,10 @@ requirements:
     - xorg-libxxf86vm    # [linux]
   run:
     - libllvm15
+    # Need these GLVND libs at runtime to actually use mesalib.
+    - libgl              # [linux]
+    - libegl             # [linux]
+    - libglx             # [linux]
 
 test:
   files:                     # [linux]
