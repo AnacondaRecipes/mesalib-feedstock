@@ -35,21 +35,21 @@ requirements:
     - pkg-config
     - glslang
   host:
-    - expat
-    - zlib
-    - zstd
-    - spirv-tools 2025.1
+    - expat {{ expat }}
+    - zlib {{ zlib }}
+    - zstd {{ zstd }}
+    - spirv-tools {{ spirv_tools }}
     - llvmdev 15
-    - libxcb             # [linux]
-    - libdrm             # [linux]
-    - libglvnd-devel     # [linux]
-    - libunwind 1.5.0    # [linux]
-    - xorg-libx11        # [linux]
-    - xorg-libxext       # [linux]
-    - xorg-libxfixes     # [linux]
-    - xorg-libxrandr     # [linux]
-    - xorg-libxshmfence  # [linux]
-    - xorg-libxxf86vm    # [linux]
+    - libxcb {{ libxcb }}             # [linux]
+    - libdrm {{ libdrm }}             # [linux]
+    - libglvnd-devel {{ libglvnd }}     # [linux]
+    - libunwind {{ libunwind }}    # [linux]
+    - xorg-libx11 {{ xorg_libx11 }}        # [linux]
+    - xorg-libxext {{ xorg_libxext }}       # [linux]
+    - xorg-libxfixes {{ xorg_libxfixes }}     # [linux]
+    - xorg-libxrandr {{ xorg_libxrandr }}     # [linux]
+    - xorg-libxshmfence {{ xorg_libxshmfence }}  # [linux]
+    - xorg-libxxf86vm {{ xorg_libxxf86vm }}    # [linux]
   run:
     - libllvm15
     # Need these GLVND libs at runtime to actually use mesalib.
