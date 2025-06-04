@@ -1,39 +1,95 @@
 #!/bin/bash
 
-osname=`uname`
-if [ $osname == Linux ]; then
-    export CC="gcc"
-    export CXX="g++"
-elif [ $osname == Darwin ]; then
-    export CC="clang"
-    export CXX="clang++"
+set -ex
+
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$BUILD_PREFIX/lib/pkgconfig
+export PKG_CONFIG=$BUILD_PREFIX/bin/pkg-config
+
+if [[ $CONDA_BUILD_CROSS_COMPILATION == "1" ]]; then
+  if [[ "${CMAKE_CROSSCOMPILING_EMULATOR:-}" == "" ]]; then
+    # Mostly taken from https://github.com/conda-forge/pocl-feedstock/blob/b88046a851a95ab3c676c0b7815da8224bd66a09/recipe/build.sh#L52
+    rm $PREFIX/bin/llvm-config
+    cp $BUILD_PREFIX/bin/llvm-config $PREFIX/bin/llvm-config
+    export LLVM_CONFIG=${PREFIX}/bin/llvm-config
+  else
+    # https://github.com/mesonbuild/meson/issues/4254
+    export LLVM_CONFIG=${BUILD_PREFIX}/bin/llvm-config
+  fi
 fi
 
-export PKG_CONFIG_PATH="${PREFIX}/lib/pkgconfig/:"${PKG_CONFIG_PATH}
-export CFLAGS="-I${PREFIX}/include "${CFLAGS}
-export LDFLAGS="-L${PREFIX}/lib "${LDFLAGS}
+# ---
+# Meson options/choices and rationale:
+# -Dgallium-drivers: Comma-separated list of Gallium drivers to build (e.g. softpipe,llvmpipe,zink)
+# -Dglx: Valid values are 'auto', 'disabled', 'dri', 'xlib'. Use 'dri' for Linux, 'disabled' for macOS.
+# -Degl: Enable or disable EGL support. Disabled on macOS, enabled on Linux.
+# -Dplatforms: Comma-separated list of platforms (e.g. x11,macos,wayland,drm). Use 'x11' for Linux, 'macos' for macOS.
+# -Dvulkan-drivers: Comma-separated list of Vulkan drivers (e.g. swrast,virtio,all). Use 'swrast' for Linux and macOS.
+# -Dlibunwind: Enable or disable libunwind support. Enabled on Linux, disabled on macOS.
+# -Dshared-glapi: Enable shared GL API. Enabled for both Linux and macOS.
+#
+# See https://gitlab.freedesktop.org/mesa/mesa/-/blob/main/meson.options
+# ---
 
-./configure \
-    --prefix=$PREFIX \
-    --disable-gles1 \
-    --disable-gles2 \
-    --disable-va \
-    --disable-gbm \
-    --disable-xvmc \
-    --disable-vdpau \
-    --enable-shared-glapi \
-    --enable-texture-float \
-    --disable-dri \
-    --with-dri-drivers= \
-    --with-gallium-drivers=swrast \
-    --disable-egl \
-    --with-egl-platforms= \
-    --enable-gallium-osmesa \
-    --disable-glx \
-    --enable-llvm \
-    --disable-llvm-shared-libs \
-    --with-osmesa-bits=32
+# Set platforms option based on target platform
+if [[ "$target_platform" == osx* ]]; then
+  MESA_OPTS="
+    ${MESA_OPTS}
+    -Dplatforms=macos
+    -Dgbm=disabled
+    -Dglx=disabled
+    -Degl=disabled
+    -Dglvnd=disabled
+  "
+else
+  MESA_OPTS="
+    ${MESA_OPTS}
+    -Dplatforms=x11
+    -Dlegacy-x11=dri2
+    -Dgbm=enabled
+    -Dglx=dri
+    -Degl=enabled
+    -Dglvnd=enabled
+  "
 
-make -j${CPU_COUNT}
-make install
+  # GLVND needs the path to the vendor's OpenGL implementation via config file.
+  mkdir -p "${PREFIX}/etc/conda/activate.d"
+  cp ${RECIPE_DIR}/activate.sh ${PREFIX}/etc/conda/activate.d/
 
+  mkdir -p "${PREFIX}/etc/conda/deactivate.d"
+  cp ${RECIPE_DIR}/deactivate.sh ${PREFIX}/etc/conda/deactivate.d/
+
+  # Silences a warning from libGL when it runs.
+  mkdir -p "${PREFIX}/etc/drirc"
+  touch "${PREFIX}/etc/drirc/.keep"
+fi
+
+# The --prefix=$PREFIX flag ensures proper installation location for conda-build
+# We might want to have a static link of llvm (-Dshared-llvm=false). Similar to https://github.com/AnacondaRecipes/llvmlite-feedstock/pull/15
+meson setup builddir/ \
+  ${MESON_ARGS} \
+  --buildtype=release \
+  --prefix=$PREFIX \
+  -Dlibdir=lib \
+  $MESA_OPTS \
+  -Dvulkan-drivers=swrast \
+  -Dgallium-drivers=softpipe,llvmpipe \
+  -Dgallium-va=disabled \
+  -Dgallium-vdpau=disabled \
+  -Dgles1=disabled \
+  -Dgles2=disabled \
+  -Degl-native-platform=surfaceless \
+  -Dllvm=enabled \
+  -Dshared-llvm=enabled \
+  -Dopengl=true \
+  -Dbuild-tests=true \
+  -Dlibunwind=enabled \
+  -Dshared-glapi=enabled \
+  -Dxmlconfig=enabled \
+  || { cat builddir/meson-logs/meson-log.txt; exit 1; }
+
+ninja -C builddir/ -j ${CPU_COUNT}
+
+ninja -C builddir/ install
+
+echo "Running Mesa tests..."
+meson test -C builddir/ -t 4 -v
