@@ -1,4 +1,4 @@
-{% set version = "25.1.1" %}
+{% set version = "25.1.5" %}
 
 package:
   name: mesalib
@@ -6,7 +6,7 @@ package:
 
 source:
   url: https://archive.mesa3d.org/mesa-{{ version }}.tar.xz
-  sha256: cf942a18b7b9e9b88524dcbf0b31fed3cde18e6d52b3375b0ab6587a14415bce
+  sha256: 3c4f6b10ff6ee950d0ec6ea733cc6e6d34c569454e3d39a9b276de9115a3b363
 
 build:
   number: 0
@@ -20,6 +20,7 @@ build:
 
 requirements:
   build:
+    - {{ stdlib('c') }}
     - {{ compiler('c') }}
     - {{ compiler('cxx') }}
     - meson >=0.63.0
@@ -70,16 +71,19 @@ test:
   commands:
     # We assert that we didn't build hardware accelerated screen rendering capabilities.
     # We want on-screen rendering capabilities to be hardware accelerated but that will take more effort.
-    - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}        # [linux]
-    - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}            # [linux]
-    - test -f $PREFIX/lib/libgbm${SHLIB_EXT}                    # [linux]
-    - test -f $PREFIX/lib/libGLX_mesa${SHLIB_EXT}               # [linux]
-    - test -f $PREFIX/lib/libEGL_mesa${SHLIB_EXT}               # [linux]
-    - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}             # [unix]
-    - test -f $PREFIX/lib/gallium-pipe/pipe_swrast${SHLIB_EXT}  # [unix]
-    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json    # [x86_64]
-    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json   # [aarch64]
-    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.ppc64le.json   # [ppc64le]
+    - test -f $PREFIX/lib/dri/kms_swrast_dri${SHLIB_EXT}              # [linux]
+    - test -f $PREFIX/lib/dri/swrast_dri${SHLIB_EXT}                  # [linux]
+    - test -f $PREFIX/lib/libgbm${SHLIB_EXT}                          # [linux]
+    - test -f $PREFIX/lib/libGLX_{{ glvnd_vendor_name }}${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libEGL_{{ glvnd_vendor_name }}${SHLIB_EXT}  # [linux]
+    - test -f $PREFIX/lib/libvulkan_lvp${SHLIB_EXT}                   # [unix]
+    - test -f $PREFIX/lib/gallium-pipe/pipe_swrast${SHLIB_EXT}        # [unix]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.x86_64.json          # [x86_64]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.aarch64.json         # [aarch64]
+    - test -f $PREFIX/share/vulkan/icd.d/lvp_icd.ppc64le.json         # [ppc64le]
+
+    - test -f $PREFIX/share/glvnd/egl_vendor.d/99_{{ glvnd_vendor_name }}.json  # [linux]
+    - test -f $PREFIX/share/glvnd/egl_vendor.d/50_mesa.json                     # [linux]
 
     - test ! -f $PREFIX/lib/libGLESv1_CM.1${SHLIB_EXT}  # [osx]
     - test ! -f $PREFIX/lib/libGLESv2.2${SHLIB_EXT}     # [osx]
