@@ -85,11 +85,21 @@ meson setup builddir/ \
   -Dlibunwind=enabled \
   -Dshared-glapi=enabled \
   -Dxmlconfig=enabled \
+  -Dglvnd-vendor-name=${glvnd_vendor_name} \
   || { cat builddir/meson-logs/meson-log.txt; exit 1; }
 
 ninja -C builddir/ -j ${CPU_COUNT}
 
 ninja -C builddir/ install
+
+# Only need this on Linux since OSX doesn't make EGL or GLX.
+if [[ "$target_platform" == linux* ]]; then
+  # To make sure our EGL mesa libs don't get picked up on accident we use an alternate GLVND name and ICD with
+  # a higher priority default file in the same location. Just renaming the GLX ones is enough.
+  cp ${PREFIX}/share/glvnd/egl_vendor.d/50_${glvnd_vendor_name}.json ${PREFIX}/share/glvnd/egl_vendor.d/99_${glvnd_vendor_name}.json
+  mv ${PREFIX}/share/glvnd/egl_vendor.d/50_${glvnd_vendor_name}.json ${PREFIX}/share/glvnd/egl_vendor.d/50_mesa.json
+  sed -i "s:libEGL_${glvnd_vendor_name}.so:libEGL_mesa.so:g" ${PREFIX}/share/glvnd/egl_vendor.d/50_mesa.json
+fi
 
 echo "Running Mesa tests..."
 meson test -C builddir/ -t 4 -v
