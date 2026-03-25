@@ -63,14 +63,18 @@ else
   touch "${PREFIX}/etc/drirc/.keep"
 fi
 
+# The --prefix=$PREFIX flag ensures proper installation location for conda-build
+# We might want to have a static link of llvm (-Dshared-llvm=false). Similar to https://github.com/AnacondaRecipes/llvmlite-feedstock/pull/15
 meson setup builddir/ \
   ${MESON_ARGS} \
+  --prefix=$PREFIX \
+  -Dlibdir=lib \
   $MESA_OPTS \
   -Dvulkan-drivers=swrast \
   -Dgallium-drivers=softpipe,llvmpipe \
   -Dgallium-va=disabled \
   -Dgallium-vdpau=disabled \
-  -Dgallium-rusticl=disabled \
+  -Dgallium-rusticl=false \
   -Dgles1=disabled \
   -Dgles2=disabled \
   -Degl-native-platform=surfaceless \
