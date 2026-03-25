@@ -26,7 +26,7 @@ requirements:
     - {{ compiler('cxx') }}
     - meson >=0.63.0
     - cmake
-    - ninja  # [win]
+    - ninja-base  # [win]
     - pyyaml
     - mako
     # packaging is used to check versions at build time
