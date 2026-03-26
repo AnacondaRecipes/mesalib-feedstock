@@ -1,4 +1,2 @@
-channels:
-  - https://staging.continuum.io/pbp/fs/spirv-headers-feedstock/pr2/4373496
-  - https://staging.continuum.io/pbp/fs/spirv-tools-feedstock/pr3/4430b53
-  - https://staging.continuum.io/pbp/fs/glslang-feedstock/pr2/0797c13
+build_env_vars:
+  ANACONDA_ROCKET_ENABLE_PY314 : yes
