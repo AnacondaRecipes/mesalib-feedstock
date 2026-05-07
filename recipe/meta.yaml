@@ -10,7 +10,7 @@ source:
   sha256: 3c4f6b10ff6ee950d0ec6ea733cc6e6d34c569454e3d39a9b276de9115a3b363
 
 build:
-  number: 1
+  number: 2
   skip: true  # [win]
   track_features:
     - mesalib
@@ -40,7 +40,7 @@ requirements:
     - zlib {{ zlib }}
     - zstd {{ zstd }}
     - spirv-tools 2026.1
-    - llvmdev 15
+    - llvmdev {{ libllvm20 }}
     - libxcb {{ libxcb }}             # [linux]
     - libdrm {{ libdrm }}             # [linux]
     - libglvnd-devel {{ libglvnd }}     # [linux]
