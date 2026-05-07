@@ -10,7 +10,7 @@ source:
   sha256: 3c4f6b10ff6ee950d0ec6ea733cc6e6d34c569454e3d39a9b276de9115a3b363
 
 build:
-  number: 2
+  number: 3
   skip: true  # [win]
   track_features:
     - mesalib
@@ -40,7 +40,7 @@ requirements:
     - zlib {{ zlib }}
     - zstd {{ zstd }}
     - spirv-tools 2026.1
-    - llvmdev {{ libllvm20 }}
+    - llvmdev {{ libllvm21 }}
     - libxcb {{ libxcb }}             # [linux]
     - libdrm {{ libdrm }}             # [linux]
     - libglvnd-devel {{ libglvnd }}     # [linux]
@@ -52,7 +52,7 @@ requirements:
     - xorg-libxshmfence {{ xorg_libxshmfence }}  # [linux]
     - xorg-libxxf86vm {{ xorg_libxxf86vm }}    # [linux]
   run:
-    - libllvm15
+    - libllvm21
     # Need these GLVND libs at runtime to actually use mesalib.
     - libgl              # [linux]
     - libegl             # [linux]
